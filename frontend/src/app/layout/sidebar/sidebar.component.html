@@ -7,9 +7,17 @@
 
       <div>
         <h1 class="text-xl font-extrabold tracking-wide">Workflow System</h1>
-        <p class="text-xs text-cyan-300">Fase 1 - Core</p>
+        <p class="text-xs text-cyan-300">Fase 2 - Seguridad JWT</p>
       </div>
     </div>
+  </div>
+
+  <div *ngIf="user" class="px-6 py-4 border-b border-cyan-400/10">
+    <p class="text-sm font-semibold text-white">{{ user.nombre }}</p>
+    <p class="text-xs text-slate-400 truncate">{{ user.email }}</p>
+    <span class="inline-block mt-2 px-2 py-1 rounded-lg bg-cyan-500/10 border border-cyan-400/20 text-cyan-300 text-xs">
+      {{ user.rol }}
+    </span>
   </div>
 
   <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
@@ -20,4 +28,13 @@
       {{ item.label }}
     </a>
   </nav>
+
+  <div class="p-4 border-t border-cyan-400/20">
+    <button
+      type="button"
+      (click)="logout()"
+      class="w-full px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 hover:bg-red-500/20 hover:text-red-200 transition-all duration-200 font-semibold">
+      Cerrar sesión
+    </button>
+  </div>
 </aside>

@@ -1,14 +1,17 @@
 import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { NgFor } from '@angular/common';
+import { NgFor, NgIf } from '@angular/common';
+import { AuthService, LoginResponse } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [NgFor, RouterLink, RouterLinkActive],
+  imports: [NgFor, NgIf, RouterLink, RouterLinkActive],
   templateUrl: './sidebar.component.html'
 })
 export class SidebarComponent {
+  user: LoginResponse | null = null;
+
   menuItems = [
     { label: 'Dashboard', route: '/dashboard' },
     { label: 'Usuarios', route: '/users' },
@@ -23,4 +26,12 @@ export class SidebarComponent {
     { label: 'Repositorio Documental', route: '/documents' },
     { label: 'Reportes', route: '/reports' }
   ];
+
+  constructor(private authService: AuthService) {
+    this.user = this.authService.getUser();
+  }
+
+  logout(): void {
+    this.authService.logout();
+  }
 }

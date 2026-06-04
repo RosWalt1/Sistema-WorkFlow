@@ -1,0 +1,88 @@
+<section class="rounded-3xl border border-cyan-400/20 bg-white/5 backdrop-blur-xl shadow-2xl shadow-cyan-500/10 p-6">
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h2 class="text-3xl font-black text-white">Departamentos</h2>
+      <p class="text-slate-400 text-sm">Gestión de áreas internas de la organización</p>
+    </div>
+
+    <button
+      class="bg-gradient-to-r from-cyan-400 to-violet-600 text-white px-5 py-3 rounded-xl font-bold hover:scale-105 transition"
+      (click)="openCreate()">
+      + Nuevo departamento
+    </button>
+  </div>
+
+  <div *ngIf="showForm" class="mb-6 rounded-2xl border border-cyan-400/20 bg-slate-950/70 p-5">
+    <h3 class="text-xl font-bold mb-4 text-cyan-300">
+      {{ editing ? 'Editar departamento' : 'Registrar nuevo departamento' }}
+    </h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <input
+        class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white"
+        [(ngModel)]="formDepartment.nombre"
+        placeholder="Nombre. Ej: Recursos Humanos">
+
+      <input
+        class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white"
+        [(ngModel)]="formDepartment.descripcion"
+        placeholder="Descripción del departamento">
+    </div>
+
+    <div class="flex gap-3 mt-5">
+      <button
+        class="bg-emerald-500 text-white px-5 py-2 rounded-xl font-bold hover:bg-emerald-600"
+        (click)="saveDepartment()"
+        [disabled]="saving">
+        {{ saving ? 'Guardando...' : editing ? 'Guardar cambios' : 'Guardar' }}
+      </button>
+
+      <button
+        class="bg-slate-700 text-white px-5 py-2 rounded-xl hover:bg-slate-600"
+        (click)="closeForm()">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <p *ngIf="loading" class="text-cyan-300">Cargando departamentos...</p>
+
+  <div *ngIf="!loading" class="overflow-hidden rounded-2xl border border-slate-700">
+    <table class="w-full text-sm text-slate-200">
+      <thead class="bg-slate-900 text-cyan-300">
+        <tr>
+          <th class="p-4 text-left">Nombre</th>
+          <th class="p-4 text-left">Descripción</th>
+          <th class="p-4 text-left">Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody class="bg-slate-950/60">
+        <tr *ngFor="let department of departments" class="border-t border-slate-800 hover:bg-white/5">
+          <td class="p-4 font-bold">{{ department.nombre }}</td>
+          <td class="p-4">{{ department.descripcion || 'Sin descripción' }}</td>
+
+          <td class="p-4 flex gap-2">
+            <button
+              class="px-3 py-1 rounded-lg bg-cyan-500 text-white hover:bg-cyan-600"
+              (click)="openEdit(department)">
+              Editar
+            </button>
+
+            <button
+              class="px-3 py-1 rounded-lg bg-red-500 text-white hover:bg-red-600"
+              (click)="deleteDepartment(department)">
+              Eliminar
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="departments.length === 0">
+          <td colspan="3" class="p-6 text-center text-slate-400">
+            No hay departamentos registrados
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

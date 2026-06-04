@@ -1,0 +1,12 @@
+services:
+  mongodb:
+    image: mongo:7
+    container_name: workflow_mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - workflow_mongo_data:/data/db
+
+volumes:
+  workflow_mongo_data:

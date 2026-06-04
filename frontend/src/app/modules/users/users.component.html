@@ -1,0 +1,115 @@
+<section class="rounded-3xl border border-cyan-400/20 bg-white/5 backdrop-blur-xl shadow-2xl shadow-cyan-500/10 p-6">
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h2 class="text-3xl font-black text-white">Usuarios</h2>
+      <p class="text-slate-400 text-sm">Gestión de usuarios del sistema</p>
+    </div>
+
+    <button
+      class="bg-gradient-to-r from-cyan-400 to-violet-600 text-white px-5 py-3 rounded-xl font-bold hover:scale-105 transition"
+      (click)="openCreate()">
+      + Nuevo usuario
+    </button>
+  </div>
+
+  <div *ngIf="showForm" class="mb-6 rounded-2xl border border-cyan-400/20 bg-slate-950/70 p-5">
+    <h3 class="text-xl font-bold mb-4 text-cyan-300">
+      {{ editing ? 'Editar usuario' : 'Registrar nuevo usuario' }}
+    </h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <input class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white"
+             [(ngModel)]="formUser.nombre"
+             placeholder="Nombre">
+
+      <input class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white"
+             [(ngModel)]="formUser.email"
+             placeholder="Email">
+
+      <input type="password"
+             class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white"
+             [(ngModel)]="formUser.password"
+             placeholder="Password">
+
+      <select class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white"
+              [(ngModel)]="formUser.rol">
+        <option value="ADMIN">ADMIN</option>
+        <option value="DISEÑADOR">DISEÑADOR</option>
+        <option value="FUNCIONARIO">FUNCIONARIO</option>
+        <option value="SUPERVISOR">SUPERVISOR</option>
+      </select>
+
+      <input class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white"
+             [(ngModel)]="formUser.departamentoId"
+             placeholder="Departamento ID">
+
+      <label class="flex items-center gap-3 text-slate-200">
+        <input type="checkbox" [(ngModel)]="formUser.activo">
+        Activo
+      </label>
+    </div>
+
+    <div class="flex gap-3 mt-5">
+      <button
+        class="bg-emerald-500 text-white px-5 py-2 rounded-xl font-bold hover:bg-emerald-600"
+        (click)="saveUser()"
+        [disabled]="saving">
+        {{ saving ? 'Guardando...' : editing ? 'Guardar cambios' : 'Guardar' }}
+      </button>
+
+      <button
+        class="bg-slate-700 text-white px-5 py-2 rounded-xl hover:bg-slate-600"
+        (click)="closeForm()">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <p *ngIf="loading" class="text-cyan-300">Cargando usuarios...</p>
+
+  <div *ngIf="!loading" class="overflow-hidden rounded-2xl border border-slate-700">
+    <table class="w-full text-sm text-slate-200">
+      <thead class="bg-slate-900 text-cyan-300">
+        <tr>
+          <th class="p-4 text-left">Nombre</th>
+          <th class="p-4 text-left">Email</th>
+          <th class="p-4 text-left">Rol</th>
+          <th class="p-4 text-left">Activo</th>
+          <th class="p-4 text-left">Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody class="bg-slate-950/60">
+        <tr *ngFor="let user of users" class="border-t border-slate-800 hover:bg-white/5">
+          <td class="p-4">{{ user.nombre }}</td>
+          <td class="p-4">{{ user.email }}</td>
+          <td class="p-4">{{ user.rol }}</td>
+          <td class="p-4">
+            <span class="px-3 py-1 rounded-full text-xs"
+                  [class.bg-emerald-500]="user.activo"
+                  [class.bg-red-500]="!user.activo">
+              {{ user.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="p-4 flex gap-2">
+            <button class="px-3 py-1 rounded-lg bg-cyan-500 text-white hover:bg-cyan-600"
+                    (click)="openEdit(user)">
+              Editar
+            </button>
+
+            <button class="px-3 py-1 rounded-lg bg-red-500 text-white hover:bg-red-600"
+                    (click)="deleteUser(user)">
+              Eliminar
+            </button>
+          </td>
+        </tr>
+
+        <tr *ngIf="users.length === 0">
+          <td colspan="5" class="p-6 text-center text-slate-400">
+            No hay usuarios registrados
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

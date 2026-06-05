@@ -2,45 +2,34 @@
   <div class="mb-6">
     <h1 class="text-2xl font-bold text-cyan-400">Políticas de Negocio</h1>
     <p class="text-slate-400">
-      Gestión de plantillas de workflow para el editor de diagramas.
+      Gestión de plantillas de workflow y acceso al editor UML Workflow.
     </p>
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
     <div class="bg-slate-900 border border-slate-700 rounded-2xl p-5 shadow-lg">
       <h2 class="text-lg font-semibold mb-4">
         {{ editando ? 'Editar política' : 'Nueva política' }}
       </h2>
 
       <label class="block text-sm text-slate-300 mb-1">Nombre</label>
-      <input
-        [(ngModel)]="form.nombre"
+      <input [(ngModel)]="form.nombre"
         class="w-full mb-4 px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 focus:outline-none focus:border-cyan-400"
-        placeholder="Ej: Aprobación de solicitud"
-      />
+        placeholder="Ej: Aprobación de solicitud" />
 
       <label class="block text-sm text-slate-300 mb-1">Descripción</label>
-      <textarea
-        [(ngModel)]="form.descripcion"
-        rows="4"
+      <textarea [(ngModel)]="form.descripcion" rows="4"
         class="w-full mb-4 px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 focus:outline-none focus:border-cyan-400"
-        placeholder="Describe el flujo de negocio"
-      ></textarea>
+        placeholder="Describe el flujo de negocio"></textarea>
 
       <div class="flex gap-3">
-        <button
-          (click)="guardar()"
-          class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold"
-        >
+        <button (click)="guardar()"
+          class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold">
           {{ editando ? 'Actualizar' : 'Guardar' }}
         </button>
 
-        <button
-          *ngIf="editando"
-          (click)="limpiarFormulario()"
-          class="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600"
-        >
+        <button *ngIf="editando" (click)="limpiarFormulario()"
+          class="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600">
           Cancelar
         </button>
       </div>
@@ -73,29 +62,22 @@
                 </span>
               </td>
 
-              <td class="py-3">
-                v{{ policy.version }}
-              </td>
+              <td class="py-3">v{{ policy.version }}</td>
 
               <td class="py-3 text-right space-x-2">
-                <button
-                  (click)="editar(policy)"
-                  class="px-3 py-1 rounded-lg bg-slate-700 hover:bg-slate-600"
-                >
+                <button (click)="abrirEditor(policy)" class="px-3 py-1 rounded-lg bg-violet-600 hover:bg-violet-500">
+                  Abrir editor
+                </button>
+
+                <button (click)="editar(policy)" class="px-3 py-1 rounded-lg bg-slate-700 hover:bg-slate-600">
                   Editar
                 </button>
 
-                <button
-                  (click)="activar(policy)"
-                  class="px-3 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500"
-                >
+                <button (click)="activar(policy)" class="px-3 py-1 rounded-lg bg-cyan-600 hover:bg-cyan-500">
                   Activar
                 </button>
 
-                <button
-                  (click)="eliminar(policy)"
-                  class="px-3 py-1 rounded-lg bg-red-600 hover:bg-red-500"
-                >
+                <button (click)="eliminar(policy)" class="px-3 py-1 rounded-lg bg-red-600 hover:bg-red-500">
                   Eliminar
                 </button>
               </td>
@@ -110,6 +92,215 @@
         </table>
       </div>
     </div>
+  </div>
+</div>
 
+<!-- MODAL EDITOR UML WORKFLOW PRO -->
+<div *ngIf="policyEditor" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+  <div
+    class="w-[96vw] h-[92vh] bg-slate-950 rounded-2xl border border-cyan-900/60 flex flex-col overflow-hidden shadow-2xl">
+
+    <!-- HEADER -->
+    <div class="h-16 px-5 border-b border-slate-700 flex items-center justify-between bg-slate-950">
+      <div>
+        <h2 class="text-xl font-bold text-cyan-400">Editor de Diagrama Workflow</h2>
+        <p class="text-xs text-slate-400">{{ policyEditor.nombre }}</p>
+      </div>
+
+      <div class="flex gap-2">
+        <button (click)="validarFlujo()" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm">
+          Validar
+        </button>
+
+        <button (click)="guardarDiagrama()"
+          class="px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-sm">
+          Guardar
+        </button>
+
+        <button (click)="volverListado()" class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-sm">
+          Cerrar
+        </button>
+      </div>
+    </div>
+
+    <div class="flex flex-1 overflow-hidden">
+
+      <!-- PANEL IZQUIERDO -->
+      <div class="w-72 shrink-0 bg-slate-900 border-r border-slate-700 p-4 overflow-y-auto">
+        <h3 class="text-cyan-400 font-bold mb-4">Elementos UML</h3>
+
+        <div class="space-y-3">
+          <button (click)="agregarNodo('INICIO')"
+            class="w-full py-3 rounded-xl bg-green-600 hover:bg-green-500 font-semibold">
+            ● Inicio
+          </button>
+
+          <button (click)="agregarNodo('ACTIVIDAD')"
+            class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 font-semibold">
+            ▭ Actividad
+          </button>
+
+          <button (click)="agregarNodo('DECISION')"
+            class="w-full py-3 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-black font-semibold">
+            ◆ Decisión
+          </button>
+
+          <button (click)="agregarNodo('FIN')" class="w-full py-3 rounded-xl bg-red-600 hover:bg-red-500 font-semibold">
+            ◉ Fin
+          </button>
+        </div>
+
+        <hr class="my-5 border-slate-700">
+
+        <button (click)="agregarCarril()"
+          class="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 font-semibold">
+          + Nuevo carril
+        </button>
+
+        <div *ngIf="selectedNode" class="mt-6 bg-slate-800 border border-slate-700 rounded-xl p-4">
+          <h3 class="text-cyan-400 font-bold mb-3">Propiedades</h3>
+
+          <label class="text-xs text-slate-400">Nombre</label>
+          <input [(ngModel)]="selectedNode.nombre"
+            class="w-full mb-3 px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-sm" />
+
+          <label class="text-xs text-slate-400">Carril</label>
+          <select [(ngModel)]="selectedNode.calle"
+            class="w-full mb-3 px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-sm">
+            <option *ngFor="let lane of lanes" [value]="lane">{{ lane }}</option>
+          </select>
+
+          <div class="grid grid-cols-3 gap-2 mb-3">
+            <button (click)="moverNodo(selectedNode, 0, -30)" class="py-2 bg-slate-700 rounded">↑</button>
+            <button (click)="moverNodo(selectedNode, -30, 0)" class="py-2 bg-slate-700 rounded">←</button>
+            <button (click)="moverNodo(selectedNode, 30, 0)" class="py-2 bg-slate-700 rounded">→</button>
+            <button (click)="moverNodo(selectedNode, 0, 30)" class="py-2 bg-slate-700 rounded col-span-3">↓</button>
+          </div>
+
+          <button (click)="iniciarConexion(selectedNode)"
+            class="w-full py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 mb-2">
+            Conectar desde aquí
+          </button>
+
+          <button (click)="eliminarNodo(selectedNode.id)" class="w-full py-2 rounded-lg bg-red-600 hover:bg-red-500">
+            Eliminar nodo
+          </button>
+        </div>
+      </div>
+
+      <!-- CANVAS -->
+      <div class="flex-1 min-w-0 overflow-auto bg-slate-800">
+        <div class="relative min-w-[1800px] bg-slate-800" [style.height.px]="getCanvasHeight()"
+          (mousemove)="arrastrarNodo($event)" (mouseup)="finalizarArrastre()" (mouseleave)="finalizarArrastre()">  
+
+          <!-- SWIMLANES -->
+          <div *ngFor="let lane of lanes; let i = index" class="absolute left-0 right-0 border-b border-slate-600"
+            [style.top.px]="i * 160" style="height:160px">
+            <div
+              class="absolute left-0 top-0 bottom-0 w-56 bg-slate-900 border-r border-slate-600 flex items-center px-4">
+              <div>
+                <div class="flex items-center gap-2">
+                  <div class="text-cyan-300 font-bold">{{ lane }}</div>
+
+                  <button *ngIf="contarNodosPorCarril(lane) === 0" (click)="eliminarCarril(lane)"
+                    class="text-red-400 hover:text-red-300 text-xs">
+                    ✕
+                  </button>
+                </div>
+                <div class="text-xs text-slate-500">{{ contarNodosPorCarril(lane) }} nodos</div>
+              </div>
+            </div>
+
+            <div
+              class="absolute left-56 right-0 top-0 bottom-0 bg-[linear-gradient(to_right,#334155_1px,transparent_1px),linear-gradient(to_bottom,#334155_1px,transparent_1px)] bg-[size:40px_40px] opacity-30">
+            </div>
+          </div>
+
+          <!-- FLECHAS -->
+          <svg class="absolute left-0 top-0 pointer-events-none" width="2200" [attr.height]="getCanvasHeight()">
+            <defs>
+              <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"
+                markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 z" fill="#22d3ee"></path>
+              </marker>
+            </defs>
+
+            <path *ngFor="let c of policyEditor.diagramaJson.connections" [attr.d]="getConnectionLine(c)"
+              stroke="#22d3ee" fill="transparent" stroke-width="3" marker-end="url(#arrow)" />
+          </svg>
+
+          <!-- NODOS -->
+          <div *ngFor="let node of policyEditor.diagramaJson.nodes" class="absolute" [style.left.px]="node.posicionX"
+            [style.top.px]="node.posicionY">
+            <div (mousedown)="iniciarArrastre($event, node)" (click)="seleccionarNodo(node)"
+              class="cursor-move select-none shadow-xl border-2 flex items-center justify-center text-center font-bold"
+              [class.ring-4]="selectedNodeId === node.id" [class.ring-cyan-300]="selectedNodeId === node.id" [ngClass]="{
+                'w-32 h-14 rounded-full bg-green-600 border-green-300': node.tipo === 'INICIO',
+                'w-40 h-16 rounded-xl bg-blue-600 border-blue-300': node.tipo === 'ACTIVIDAD',
+                'w-28 h-28 rotate-45 bg-yellow-500 border-yellow-200 text-black': node.tipo === 'DECISION',
+                'w-32 h-14 rounded-full bg-red-600 border-red-300': node.tipo === 'FIN'
+              }">
+              <span [class.-rotate-45]="node.tipo === 'DECISION'">
+                {{ node.nombre }}
+              </span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      
+      <!-- PANEL DERECHO: CONEXIONES -->
+      <div class="w-80 shrink-0 bg-slate-900 border-l border-slate-700 p-4 overflow-y-auto">
+        <h3 class="text-cyan-400 font-bold mb-4">Conexiones</h3>
+
+        <div *ngIf="policyEditor.diagramaJson.connections.length === 0" class="text-sm text-slate-500">
+          No hay conexiones todavía.
+        </div>
+
+        <div *ngFor="let c of policyEditor.diagramaJson.connections; let i = index"
+          class="bg-slate-800 border border-slate-700 rounded-xl p-3 mb-3 text-sm">
+          <div class="text-slate-300">
+            {{ getNodeName(c.origen) }} → {{ getNodeName(c.destino) }}
+          </div>
+
+          <input [(ngModel)]="c.condicion" placeholder="Condición"
+            class="w-full mt-2 px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs" />
+
+          <button (click)="eliminarConexion(i)" class="mt-2 w-full py-1 rounded bg-red-600 hover:bg-red-500 text-xs">
+            Eliminar
+          </button>
+        </div>
+        <!-- VISTA TEXTUAL ABAJO DE TODO -->
+    <div class="bg-slate-800 border-t border-slate-700 px-5 py-3">
+      <div class="flex gap-2 mb-2">
+        <h3 class="text-cyan-300 font-bold">Vista textual del flujo</h3>
+        <span class="text-slate-500 text-sm">
+          {{ getVistaTextualFlujo().length }} pasos
+        </span>
+      </div>
+
+      <div
+        *ngFor="let c of getVistaTextualFlujo(); let i = index"
+        class="text-sm text-slate-100 mb-1"
+      >
+        <b>{{ i + 1 }}.</b>
+        {{ getNodeName(c.origen) }} → {{ getNodeName(c.destino) }}
+        <span *ngIf="c.condicion">
+          [{{ c.condicion }}]
+        </span>
+      </div>
+
+      <div
+        *ngIf="getVistaTextualFlujo().length === 0"
+        class="text-sm text-slate-500"
+      >
+        Todavía no hay conexiones registradas.
+      </div>
+    </div>
+      </div>
+
+    </div>
+    
   </div>
 </div>

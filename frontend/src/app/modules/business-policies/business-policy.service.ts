@@ -30,6 +30,7 @@ export interface BusinessPolicy {
   estado?: 'BORRADOR' | 'ACTIVO' | 'INACTIVO';
   version?: number;
   diagramaJson: DiagramJson;
+  bpmnXml?: string;
   lockedBy?: string;
   lockedAt?: string;
 }

@@ -20,6 +20,7 @@ public class BusinessPolicy {
     private Integer version = 1;
 
     private DiagramJson diagramaJson;
+    private String bpmnXml;
 
     private String lockedBy;
     private LocalDateTime lockedAt;

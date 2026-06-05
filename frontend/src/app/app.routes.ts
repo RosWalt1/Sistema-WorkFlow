@@ -7,6 +7,8 @@ import { DepartmentsComponent } from './modules/departments/departments.componen
 import { LoginComponent } from './modules/login/login.component';
 import { authGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/admin.guard';
+import { BusinessPoliciesComponent } from './modules/business-policies/business-policies.component';
+import { BpmnEditorComponent } from './modules/bpmn-editor/bpmn-editor.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -20,7 +22,9 @@ export const routes: Routes = [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'users', component: UsersComponent, canActivate: [adminGuard] },
       { path: 'roles', component: RolesComponent, canActivate: [adminGuard] },
-      { path: 'departments', component: DepartmentsComponent, canActivate: [adminGuard] }
+      { path: 'departments', component: DepartmentsComponent, canActivate: [adminGuard] },
+      { path: 'business-policies', component: BusinessPoliciesComponent, canActivate: [authGuard] },
+      { path: 'business-policies/:id/editor', component: BpmnEditorComponent, canActivate: [authGuard] }
     ]
   },
 

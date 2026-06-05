@@ -38,6 +38,7 @@ public class BusinessPolicyService {
         policy.setNombre(datos.getNombre());
         policy.setDescripcion(datos.getDescripcion());
         policy.setDiagramaJson(datos.getDiagramaJson());
+        policy.setBpmnXml(datos.getBpmnXml());
 
         if (policy.getVersion() == null) {
             policy.setVersion(1);

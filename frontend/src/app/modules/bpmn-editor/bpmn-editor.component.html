@@ -1,0 +1,57 @@
+<div class="p-6 text-white h-full">
+  <div class="mb-4 flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-cyan-400">Editor BPMN</h1>
+      <p class="text-slate-400">
+        {{ policy?.nombre || 'Cargando política...' }}
+      </p>
+    </div>
+
+    <div class="flex gap-3">
+      <button
+        (click)="volver()"
+        class="px-5 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-semibold"
+      >
+        Volver
+      </button>
+
+      <button
+        (click)="guardar()"
+        [disabled]="guardando || cargando"
+        class="px-5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-slate-950 font-bold"
+      >
+        {{ guardando ? 'Guardando...' : 'Guardar diagrama' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="mb-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="rounded-2xl border border-cyan-400/20 bg-slate-900 p-4">
+      <p class="text-xs text-slate-400">Estado</p>
+      <p class="font-bold text-cyan-300">{{ policy?.estado || '—' }}</p>
+    </div>
+
+    <div class="rounded-2xl border border-violet-400/20 bg-slate-900 p-4">
+      <p class="text-xs text-slate-400">Versión</p>
+      <p class="font-bold text-violet-300">v{{ policy?.version || 1 }}</p>
+    </div>
+
+    <div class="rounded-2xl border border-slate-700 bg-slate-900 p-4">
+      <p class="text-xs text-slate-400">Descripción</p>
+      <p class="font-semibold text-slate-200 truncate">
+        {{ policy?.descripcion || 'Sin descripción' }}
+      </p>
+    </div>
+  </div>
+
+  <div class="h-[72vh] rounded-2xl overflow-hidden border border-cyan-400/30 bg-white relative">
+    <div
+      *ngIf="cargando"
+      class="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/80 text-cyan-300 font-semibold"
+    >
+      Cargando editor...
+    </div>
+
+    <div #canvas class="w-full h-full"></div>
+  </div>
+</div>

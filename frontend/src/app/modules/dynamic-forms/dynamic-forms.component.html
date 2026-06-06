@@ -1,0 +1,259 @@
+<div class="min-h-screen bg-slate-950 text-white p-6">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <div>
+      <h1 class="text-3xl font-bold text-cyan-400">Formularios Dinámicos</h1>
+      <p class="text-slate-400 mt-1">
+        Diseña formularios asociados a actividades del workflow.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+      <!-- FORMULARIO -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg">
+        <h2 class="text-xl font-semibold mb-4">
+          {{ editingId ? 'Editar formulario' : 'Crear formulario' }}
+        </h2>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm text-slate-300 mb-1">Nombre</label>
+            <input
+              type="text"
+              [(ngModel)]="form.nombre"
+              class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-cyan-400"
+              placeholder="Ej: Formulario de aprobación"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm text-slate-300 mb-1">Activity ID</label>
+            <input
+              type="text"
+              [(ngModel)]="form.activityId"
+              class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-cyan-400"
+              placeholder="Ej: actividad-001"
+            />
+          </div>
+
+          <div class="flex items-center justify-between pt-2">
+            <h3 class="text-lg font-semibold text-slate-200">Campos</h3>
+            <button
+              type="button"
+              (click)="addField()"
+              class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold px-4 py-2 rounded-xl transition"
+            >
+              + Agregar campo
+            </button>
+          </div>
+
+          <div *ngIf="form.campos.length === 0" class="text-slate-500 text-sm border border-dashed border-slate-700 rounded-xl p-4">
+            No hay campos agregados.
+          </div>
+
+          <div
+            *ngFor="let field of form.campos; let i = index"
+            class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-3"
+          >
+            <div class="flex justify-between items-center">
+              <span class="text-sm text-cyan-400 font-semibold">Campo {{ i + 1 }}</span>
+              <button
+                type="button"
+                (click)="removeField(i)"
+                class="text-red-400 hover:text-red-300 text-sm"
+              >
+                Eliminar
+              </button>
+            </div>
+
+            <div>
+              <label class="block text-sm text-slate-300 mb-1">Nombre del campo</label>
+              <input
+                type="text"
+                [(ngModel)]="field.nombre"
+                class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-cyan-400"
+                placeholder="Ej: Observación"
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm text-slate-300 mb-2">Tipo de campo</label>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  (click)="setFieldType(field, 'texto')"
+                  [class.bg-cyan-500]="field.tipoTexto"
+                  [class.text-slate-950]="field.tipoTexto"
+                  class="px-4 py-2 rounded-xl border border-slate-700 text-sm hover:border-cyan-400"
+                >
+                  Texto
+                </button>
+
+                <button
+                  type="button"
+                  (click)="setFieldType(field, 'fecha')"
+                  [class.bg-cyan-500]="field.tipoFecha"
+                  [class.text-slate-950]="field.tipoFecha"
+                  class="px-4 py-2 rounded-xl border border-slate-700 text-sm hover:border-cyan-400"
+                >
+                  Fecha
+                </button>
+
+                <button
+                  type="button"
+                  (click)="setFieldType(field, 'checkbox')"
+                  [class.bg-cyan-500]="field.tipoCheckbox"
+                  [class.text-slate-950]="field.tipoCheckbox"
+                  class="px-4 py-2 rounded-xl border border-slate-700 text-sm hover:border-cyan-400"
+                >
+                  Checkbox
+                </button>
+              </div>
+            </div>
+
+            <label class="flex items-center gap-2 text-sm text-slate-300">
+              <input
+                type="checkbox"
+                [(ngModel)]="field.adjuntoRequerido"
+                class="accent-cyan-500"
+              />
+              Adjunto requerido
+            </label>
+          </div>
+
+          <div class="flex gap-3 pt-4">
+            <button
+              type="button"
+              (click)="saveForm()"
+              class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-5 py-2 rounded-xl transition"
+            >
+              {{ editingId ? 'Actualizar' : 'Guardar' }}
+            </button>
+
+            <button
+              type="button"
+              (click)="resetForm()"
+              class="bg-slate-800 hover:bg-slate-700 text-white font-semibold px-5 py-2 rounded-xl transition"
+            >
+              Limpiar
+            </button>
+          </div>
+        </div>
+      </div>
+
+<!-- VISTA PREVIA -->
+<div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg">
+  <h2 class="text-xl font-semibold mb-4 text-violet-400">Vista previa del formulario</h2>
+
+  <div class="bg-slate-950 border border-slate-800 rounded-xl p-5 min-h-[250px]">
+    <h3 class="text-lg font-bold text-white mb-1">
+      {{ form.nombre || 'Nombre del formulario' }}
+    </h3>
+
+    <p class="text-sm text-slate-500 mb-5">
+      Actividad: {{ form.activityId || 'Sin actividad asociada' }}
+    </p>
+
+    <div *ngIf="form.campos.length === 0" class="text-slate-500 text-sm border border-dashed border-slate-700 rounded-xl p-4">
+      Agrega campos para visualizar el formulario.
+    </div>
+
+    <div class="space-y-4">
+      <div *ngFor="let field of form.campos">
+        <label class="block text-sm text-slate-300 mb-1">
+          {{ field.nombre || 'Campo sin nombre' }}
+        </label>
+
+        <input
+          *ngIf="field.tipoTexto"
+          type="text"
+          disabled
+          class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-slate-400"
+          placeholder="Ingrese texto"
+        />
+
+        <input
+          *ngIf="field.tipoFecha"
+          type="date"
+          disabled
+          class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-slate-400"
+        />
+
+        <label
+          *ngIf="field.tipoCheckbox"
+          class="flex items-center gap-2 text-slate-300"
+        >
+          <input type="checkbox" disabled class="accent-cyan-500" />
+          Marcar opción
+        </label>
+
+        <div *ngIf="field.adjuntoRequerido" class="mt-2">
+          <div class="border border-dashed border-cyan-400/30 rounded-xl p-3 text-sm text-cyan-300 bg-cyan-500/5">
+            Archivo requerido para este campo
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="form.campos.length > 0" class="pt-5 mt-5 border-t border-slate-800 flex justify-end">
+      <button
+        type="button"
+        disabled
+        class="bg-cyan-500 text-slate-950 font-bold px-5 py-2 rounded-xl opacity-70"
+      >
+        Enviar formulario
+      </button>
+    </div>
+  </div>
+</div>
+
+    <!-- LISTA -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg">
+      <h2 class="text-xl font-semibold mb-4">Formularios registrados</h2>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-slate-400 border-b border-slate-800">
+              <th class="py-3 px-3">Nombre</th>
+              <th class="py-3 px-3">Activity ID</th>
+              <th class="py-3 px-3">Campos</th>
+              <th class="py-3 px-3 text-right">Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let item of forms" class="border-b border-slate-800 hover:bg-slate-800/40">
+              <td class="py-3 px-3 text-white">{{ item.nombre }}</td>
+              <td class="py-3 px-3 text-cyan-400">{{ item.activityId }}</td>
+              <td class="py-3 px-3 text-slate-300">{{ item.campos.length }}</td>
+              <td class="py-3 px-3 text-right space-x-2">
+                <button
+                  (click)="editForm(item)"
+                  class="bg-violet-500 hover:bg-violet-400 text-white px-3 py-1 rounded-lg"
+                >
+                  Editar
+                </button>
+
+                <button
+                  (click)="deleteForm(item.id)"
+                  class="bg-red-500 hover:bg-red-400 text-white px-3 py-1 rounded-lg"
+                >
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+
+            <tr *ngIf="forms.length === 0">
+              <td colspan="4" class="py-6 text-center text-slate-500">
+                No hay formularios registrados.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>

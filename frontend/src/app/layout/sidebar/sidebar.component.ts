@@ -19,6 +19,7 @@ export class SidebarComponent {
     { label: 'Departamentos', route: '/departments' },
     { label: 'Políticas', route: '/business-policies' },
     { label: 'Editor Diagrama', route: '/business-policies' },
+    { label: 'Formularios Dinámicos', route: '/dynamic-forms' },
     { label: 'Trámites', route: '/processes' },
     { label: 'Mis Actividades', route: '/tasks' },
     { label: 'Monitoreo', route: '/monitoring' },

@@ -42,15 +42,17 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> {})
+                .cors(cors -> {
+                })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/api/auth/**").permitAll()
-                    .requestMatchers("/api/users/**").hasRole("ADMIN")
-                    .requestMatchers("/api/roles/**").hasRole("ADMIN")
-                    .requestMatchers("/api/departments/**").hasRole("ADMIN")
-                    .anyRequest().authenticated()
-                )
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/users/**").hasRole("ADMIN")
+                        .requestMatchers("/api/roles/**").hasRole("ADMIN")
+                        .requestMatchers("/api/departments/**").hasRole("ADMIN")
+                        .requestMatchers("/api/dynamic-forms/**").hasRole("ADMIN")
+                        .requestMatchers("/api/form-submissions/**").hasRole("ADMIN")
+                        .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

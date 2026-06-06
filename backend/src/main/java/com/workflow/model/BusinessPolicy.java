@@ -5,7 +5,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
-//import java.util.List;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Document(collection = "business_policies")
@@ -21,6 +22,11 @@ public class BusinessPolicy {
 
     private DiagramJson diagramaJson;
     private String bpmnXml;
+
+    private List<String> keywords = new ArrayList<>();
+    private List<String> requiredDocuments = new ArrayList<>();
+    private String estimatedDuration;
+    private String recommendedFor;
 
     private String lockedBy;
     private LocalDateTime lockedAt;

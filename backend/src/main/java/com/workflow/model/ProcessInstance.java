@@ -23,6 +23,10 @@ public class ProcessInstance {
 
     private String clienteId;
 
+    private String currentNodeId;
+
+    private String currentNodeName;
+
     private ProcessStatus estado = ProcessStatus.EN_PROCESO;
 
     private LocalDateTime fechaInicio;

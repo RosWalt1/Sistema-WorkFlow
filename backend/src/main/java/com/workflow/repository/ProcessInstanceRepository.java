@@ -11,4 +11,6 @@ public interface ProcessInstanceRepository extends MongoRepository<ProcessInstan
     List<ProcessInstance> findByPolicyId(String policyId);
 
     List<ProcessInstance> findByEstado(ProcessStatus estado);
+
+    long countByEstado(ProcessStatus estado);
 }

@@ -1,0 +1,299 @@
+<div class="min-h-screen bg-[#020617] text-white p-6">
+  <div class="mb-8">
+    <h1 class="text-3xl font-black tracking-tight text-cyan-300">
+      Monitoreo y Trazabilidad
+    </h1>
+    <p class="text-slate-400 mt-2">
+      Seguimiento de procesos, tareas, historial, progreso y tiempos de ejecución.
+    </p>
+  </div>
+
+  <div *ngIf="errorMessage" class="mb-6 rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-red-300">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="summary" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+    <div class="rounded-2xl border border-cyan-400/20 bg-white/5 p-5">
+      <p class="text-slate-400 text-sm">Procesos totales</p>
+      <p class="text-3xl font-black text-white mt-2">{{ summary.totalProcesses }}</p>
+    </div>
+
+    <div class="rounded-2xl border border-yellow-400/20 bg-yellow-500/10 p-5">
+      <p class="text-yellow-200 text-sm">En proceso</p>
+      <p class="text-3xl font-black text-yellow-300 mt-2">{{ summary.processesInProgress }}</p>
+    </div>
+
+    <div class="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-5">
+      <p class="text-emerald-200 text-sm">Finalizados</p>
+      <p class="text-3xl font-black text-emerald-300 mt-2">{{ summary.processesFinished }}</p>
+    </div>
+
+    <div class="rounded-2xl border border-red-400/20 bg-red-500/10 p-5">
+      <p class="text-red-200 text-sm">Cancelados</p>
+      <p class="text-3xl font-black text-red-300 mt-2">{{ summary.processesCancelled }}</p>
+    </div>
+
+    <div class="rounded-2xl border border-cyan-400/20 bg-white/5 p-5">
+      <p class="text-slate-400 text-sm">Tareas totales</p>
+      <p class="text-3xl font-black text-white mt-2">{{ summary.totalTasks }}</p>
+    </div>
+
+    <div class="rounded-2xl border border-yellow-400/20 bg-yellow-500/10 p-5">
+      <p class="text-yellow-200 text-sm">Tareas pendientes</p>
+      <p class="text-3xl font-black text-yellow-300 mt-2">{{ summary.pendingTasks }}</p>
+    </div>
+
+    <div class="rounded-2xl border border-emerald-400/20 bg-emerald-500/10 p-5">
+      <p class="text-emerald-200 text-sm">Tareas completadas</p>
+      <p class="text-3xl font-black text-emerald-300 mt-2">{{ summary.completedTasks }}</p>
+    </div>
+
+    <div class="rounded-2xl border border-red-400/20 bg-red-500/10 p-5">
+      <p class="text-red-200 text-sm">Tareas canceladas</p>
+      <p class="text-3xl font-black text-red-300 mt-2">{{ summary.cancelledTasks }}</p>
+    </div>
+  </div>
+
+  <div class="rounded-2xl border border-cyan-400/20 bg-white/5 p-5 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div>
+        <label class="block text-sm text-slate-400 mb-2">Estado</label>
+        <select
+          [(ngModel)]="statusFilter"
+          (change)="applyFilters()"
+          class="w-full rounded-xl bg-[#020617] border border-cyan-400/20 px-4 py-3 text-slate-200 outline-none focus:border-cyan-400">
+          <option value="TODOS">Todos</option>
+          <option value="PENDIENTE">Pendiente</option>
+          <option value="COMPLETADA">Completada</option>
+          <option value="CANCELADA">Cancelada</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm text-slate-400 mb-2">Política</label>
+        <input
+          [(ngModel)]="policyFilter"
+          (input)="applyFilters()"
+          type="text"
+          placeholder="Buscar por policyId"
+          class="w-full rounded-xl bg-[#020617] border border-cyan-400/20 px-4 py-3 text-slate-200 outline-none focus:border-cyan-400">
+      </div>
+
+      <div>
+        <label class="block text-sm text-slate-400 mb-2">Cliente / Proceso</label>
+        <input
+          [(ngModel)]="clienteFilter"
+          (input)="applyFilters()"
+          type="text"
+          placeholder="Buscar por proceso"
+          class="w-full rounded-xl bg-[#020617] border border-cyan-400/20 px-4 py-3 text-slate-200 outline-none focus:border-cyan-400">
+      </div>
+
+      <div class="flex items-end">
+        <button
+          type="button"
+          (click)="clearFilters()"
+          class="w-full rounded-xl border border-cyan-400/30 bg-cyan-500/10 px-4 py-3 text-cyan-300 hover:bg-cyan-500/20 transition">
+          Limpiar filtros
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    <div class="rounded-2xl border border-cyan-400/20 bg-white/5 overflow-hidden">
+      <div class="p-5 border-b border-cyan-400/20">
+        <h2 class="text-xl font-bold text-cyan-300">Tareas monitoreadas</h2>
+        <p class="text-sm text-slate-400 mt-1">
+          Selecciona una tarea para ver la trazabilidad del proceso.
+        </p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-cyan-500/10 text-cyan-200">
+            <tr>
+              <th class="text-left px-4 py-3">Actividad</th>
+              <th class="text-left px-4 py-3">Responsable</th>
+              <th class="text-left px-4 py-3">Estado</th>
+              <th class="text-left px-4 py-3">Acción</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let task of filteredTasks" class="border-t border-cyan-400/10 hover:bg-white/5">
+              <td class="px-4 py-3">
+                <p class="font-semibold text-white">{{ task.nodeName }}</p>
+                <p class="text-xs text-slate-500 truncate max-w-[220px]">{{ task.processInstanceId }}</p>
+              </td>
+
+              <td class="px-4 py-3 text-slate-300">
+                {{ task.assignedTo }}
+              </td>
+
+              <td class="px-4 py-3">
+                <span
+                  class="inline-flex rounded-full border px-3 py-1 text-xs font-semibold"
+                  [ngClass]="getStatusClass(task.estado)">
+                  {{ task.estado }}
+                </span>
+              </td>
+
+              <td class="px-4 py-3">
+                <button
+                  type="button"
+                  (click)="loadProcessDetail(task.processInstanceId)"
+                  class="rounded-lg bg-cyan-500/20 border border-cyan-400/30 px-3 py-2 text-cyan-300 hover:bg-cyan-500/30 transition">
+                  Ver trazabilidad
+                </button>
+              </td>
+            </tr>
+
+            <tr *ngIf="filteredTasks.length === 0">
+              <td colspan="4" class="px-4 py-8 text-center text-slate-400">
+                No hay tareas para mostrar.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border border-violet-400/20 bg-white/5 p-5">
+      <ng-container *ngIf="selectedProcess; else emptyTrace">
+        <div class="flex items-start justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-violet-300">Detalle del proceso</h2>
+            <p class="text-xs text-slate-500 mt-1 break-all">
+              {{ selectedProcess.processInstanceId }}
+            </p>
+          </div>
+
+          <span
+            class="inline-flex rounded-full border px-3 py-1 text-xs font-semibold"
+            [ngClass]="getStatusClass(selectedProcess.estado)">
+            {{ selectedProcess.estado }}
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div class="rounded-xl bg-[#020617] border border-cyan-400/10 p-4">
+            <p class="text-slate-400 text-sm">Nodo actual</p>
+            <p class="text-white font-semibold mt-1">
+              {{ selectedProcess.currentNodeName || 'Proceso finalizado' }}
+            </p>
+          </div>
+
+          <div class="rounded-xl bg-[#020617] border border-cyan-400/10 p-4">
+            <p class="text-slate-400 text-sm">Tiempo total</p>
+            <p class="text-white font-semibold mt-1">
+              {{ formatDuration(selectedProcess.totalDurationMinutes) }}
+            </p>
+          </div>
+
+          <div class="rounded-xl bg-[#020617] border border-cyan-400/10 p-4">
+            <p class="text-slate-400 text-sm">Fecha inicio</p>
+            <p class="text-white font-semibold mt-1">
+              {{ formatDate(selectedProcess.fechaInicio) }}
+            </p>
+          </div>
+
+          <div class="rounded-xl bg-[#020617] border border-cyan-400/10 p-4">
+            <p class="text-slate-400 text-sm">Fecha fin</p>
+            <p class="text-white font-semibold mt-1">
+              {{ formatDate(selectedProcess.fechaFin) }}
+            </p>
+          </div>
+        </div>
+
+        <div class="mb-8">
+          <div class="flex justify-between text-sm mb-2">
+            <span class="text-slate-300">Progreso general</span>
+            <span class="text-cyan-300 font-bold">{{ selectedProcess.progressPercentage }}%</span>
+          </div>
+
+          <div class="h-3 rounded-full bg-slate-800 overflow-hidden border border-cyan-400/20">
+            <div
+              class="h-full bg-gradient-to-r from-cyan-400 to-violet-500"
+              [style.width.%]="selectedProcess.progressPercentage">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 gap-3 mt-4 text-center">
+            <div class="rounded-xl bg-emerald-500/10 border border-emerald-400/20 p-3">
+              <p class="text-emerald-300 font-bold">{{ selectedProcess.completedTasks }}</p>
+              <p class="text-xs text-slate-400">Completadas</p>
+            </div>
+
+            <div class="rounded-xl bg-yellow-500/10 border border-yellow-400/20 p-3">
+              <p class="text-yellow-300 font-bold">{{ selectedProcess.pendingTasks }}</p>
+              <p class="text-xs text-slate-400">Pendientes</p>
+            </div>
+
+            <div class="rounded-xl bg-red-500/10 border border-red-400/20 p-3">
+              <p class="text-red-300 font-bold">{{ selectedProcess.cancelledTasks }}</p>
+              <p class="text-xs text-slate-400">Canceladas</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-8">
+          <h3 class="text-lg font-bold text-cyan-300 mb-4">Tiempo por actividad</h3>
+
+          <div class="space-y-3">
+            <div
+              *ngFor="let task of selectedProcess.taskDurations"
+              class="rounded-xl bg-[#020617] border border-cyan-400/10 p-4">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="font-semibold text-white">{{ task.nodeName }}</p>
+                  <p class="text-sm text-slate-400">{{ task.assignedTo }}</p>
+                </div>
+
+                <span
+                  class="inline-flex rounded-full border px-3 py-1 text-xs font-semibold"
+                  [ngClass]="getStatusClass(task.estado)">
+                  {{ task.estado }}
+                </span>
+              </div>
+
+              <div class="mt-3 text-sm text-slate-400">
+                Duración:
+                <span class="text-cyan-300 font-semibold">
+                  {{ formatDuration(task.durationMinutes) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-lg font-bold text-violet-300 mb-4">Historial visual</h3>
+
+          <div class="relative border-l border-violet-400/30 ml-3 space-y-5">
+            <div *ngFor="let item of selectedProcess.historial" class="relative pl-6">
+              <div class="absolute -left-[7px] top-1 w-3 h-3 rounded-full bg-violet-400"></div>
+              <p class="font-semibold text-white">{{ item.accion }}</p>
+              <p class="text-sm text-slate-400">{{ item.detalle }}</p>
+              <p class="text-xs text-slate-500 mt-1">{{ formatDate(item.fecha) }}</p>
+            </div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #emptyTrace>
+        <div class="h-full min-h-[420px] flex items-center justify-center text-center">
+          <div>
+            <div class="w-20 h-20 mx-auto rounded-3xl bg-violet-500/10 border border-violet-400/20 flex items-center justify-center text-3xl">
+              ⏱
+            </div>
+            <h2 class="text-xl font-bold text-white mt-5">Selecciona un proceso</h2>
+            <p class="text-slate-400 mt-2 max-w-md">
+              Haz clic en “Ver trazabilidad” para visualizar historial, tiempos y progreso.
+            </p>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

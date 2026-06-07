@@ -15,4 +15,6 @@ public interface TaskRepository extends MongoRepository<Task, String> {
     List<Task> findByAssignedTo(String assignedTo);
 
     List<Task> findByAssignedToAndEstado(String assignedTo, TaskStatus estado);
+
+    long countByEstado(TaskStatus estado);
 }

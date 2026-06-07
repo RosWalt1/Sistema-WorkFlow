@@ -13,6 +13,7 @@ import { DynamicFormsComponent } from './modules/dynamic-forms/dynamic-forms.com
 import { TasksComponent } from './modules/tasks/tasks.component';
 import { PolicyRequirementsComponent } from './modules/policy-requirements/policy-requirements.component';
 import { ProcessesComponent } from './modules/processes/processes.component';
+import { MonitoringComponent } from './modules/monitoring/monitoring.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -29,10 +30,11 @@ export const routes: Routes = [
       { path: 'departments', component: DepartmentsComponent, canActivate: [adminGuard] },
       { path: 'business-policies', component: BusinessPoliciesComponent, canActivate: [authGuard] },
       { path: 'business-policies/:id/editor', component: BpmnEditorComponent, canActivate: [authGuard] },
-      {path: 'dynamic-forms', component: DynamicFormsComponent },
-      {path: 'tasks', component: TasksComponent },
+      { path: 'dynamic-forms', component: DynamicFormsComponent, canActivate: [authGuard] },
+      { path: 'tasks', component: TasksComponent, canActivate: [authGuard] },
       { path: 'policy-requirements', component: PolicyRequirementsComponent, canActivate: [authGuard] },
-      { path: 'processes', component: ProcessesComponent, canActivate: [authGuard] }
+      { path: 'processes', component: ProcessesComponent, canActivate: [authGuard] },
+      { path: 'monitoring', component: MonitoringComponent, canActivate: [authGuard] }
     ]
   },
 

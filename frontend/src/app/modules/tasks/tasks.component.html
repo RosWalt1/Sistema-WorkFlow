@@ -1,58 +1,73 @@
 <div class="min-h-screen bg-slate-950 text-white p-6">
   <div class="max-w-7xl mx-auto space-y-6">
-
     <div>
       <h1 class="text-3xl font-bold text-cyan-400">Mis Actividades</h1>
       <p class="text-slate-400 mt-1">
-        Ejecuta actividades del workflow y completa formularios dinámicos asociados.
+        Ejecuta tareas reales generadas por el motor de workflow.
       </p>
     </div>
 
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+    <div *ngIf="message" class="rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-4 py-3 text-cyan-200">
+      {{ message }}
+    </div>
 
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg">
-        <h2 class="text-xl font-semibold mb-4">Actividades pendientes</h2>
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <section class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-semibold">Tareas pendientes</h2>
+
+          <button
+            type="button"
+            (click)="loadPendingTasks()"
+            class="px-3 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm"
+          >
+            Actualizar
+          </button>
+        </div>
+
+        <div *ngIf="loadingTasks" class="text-cyan-400">Cargando tareas...</div>
+
+        <div *ngIf="!loadingTasks && tasks.length === 0" class="text-slate-500 border border-dashed border-slate-700 rounded-xl p-6">
+          No hay tareas pendientes.
+        </div>
 
         <div class="space-y-4">
-          <div
-            *ngFor="let activity of activities"
+          <article
+            *ngFor="let task of tasks"
             class="bg-slate-950 border border-slate-800 rounded-xl p-4 hover:border-cyan-400/40 transition"
           >
             <div class="flex items-start justify-between gap-4">
               <div>
-                <h3 class="font-bold text-white">{{ activity.nombre }}</h3>
-                <p class="text-sm text-slate-400 mt-1">{{ activity.descripcion }}</p>
-                <p class="text-xs text-cyan-400 mt-2">ID: {{ activity.id }}</p>
+                <h3 class="font-bold text-white">{{ task.nodeName }}</h3>
+                <p class="text-sm text-slate-400 mt-1">
+                  Responsable: {{ task.assignedTo }}
+                </p>
+                <p class="text-xs text-cyan-400 mt-2">Task ID: {{ task.id }}</p>
+                <p class="text-xs text-slate-500">Proceso: {{ task.processInstanceId }}</p>
               </div>
 
-              <span
-                class="px-3 py-1 rounded-lg text-xs font-semibold"
-                [class.bg-yellow-500]="activity.estado === 'Pendiente'"
-                [class.text-slate-950]="activity.estado === 'Pendiente'"
-                [class.bg-green-500]="activity.estado === 'Completada'"
-                [class.text-white]="activity.estado === 'Completada'"
-              >
-                {{ activity.estado }}
+              <span class="px-3 py-1 rounded-lg text-xs font-semibold bg-yellow-500 text-slate-950">
+                {{ task.estado }}
               </span>
             </div>
 
             <button
               type="button"
-              (click)="executeActivity(activity)"
+              (click)="executeTask(task)"
               class="mt-4 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-4 py-2 rounded-xl transition"
             >
-              Ejecutar actividad
+              Ejecutar tarea
             </button>
-          </div>
+          </article>
         </div>
-      </div>
+      </section>
 
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg">
+      <section class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-xl font-semibold text-violet-400">Ejecución de actividad</h2>
+          <h2 class="text-xl font-semibold text-violet-400">Ejecución de tarea</h2>
 
           <button
-            *ngIf="selectedActivity"
+            *ngIf="selectedTask"
             type="button"
             (click)="closePanel()"
             class="text-slate-400 hover:text-white"
@@ -61,23 +76,20 @@
           </button>
         </div>
 
-        <div *ngIf="!selectedActivity" class="text-slate-500 border border-dashed border-slate-700 rounded-xl p-6">
-          Selecciona una actividad para ejecutarla.
+        <div *ngIf="!selectedTask" class="text-slate-500 border border-dashed border-slate-700 rounded-xl p-6">
+          Selecciona una tarea pendiente para ejecutarla.
         </div>
 
-        <div *ngIf="selectedActivity" class="space-y-5">
+        <div *ngIf="selectedTask" class="space-y-5">
           <div class="bg-slate-950 border border-slate-800 rounded-xl p-4">
-            <h3 class="font-bold text-white">{{ selectedActivity.nombre }}</h3>
-            <p class="text-sm text-slate-400 mt-1">{{ selectedActivity.descripcion }}</p>
-            <p class="text-xs text-cyan-400 mt-2">Activity ID: {{ selectedActivity.id }}</p>
+            <h3 class="font-bold text-white">{{ selectedTask.nodeName }}</h3>
+            <p class="text-sm text-slate-400 mt-1">Responsable: {{ selectedTask.assignedTo }}</p>
+            <p class="text-xs text-cyan-400 mt-2">Node ID: {{ selectedTask.nodeId }}</p>
+            <p class="text-xs text-slate-500">Proceso: {{ selectedTask.processInstanceId }}</p>
           </div>
 
           <div *ngIf="loadingForm" class="text-cyan-400">
-            Cargando formulario dinámico...
-          </div>
-
-          <div *ngIf="message" class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-slate-300">
-            {{ message }}
+            Buscando formulario dinámico asociado...
           </div>
 
           <form *ngIf="dynamicForm" class="bg-slate-950 border border-slate-800 rounded-xl p-5 space-y-4">
@@ -108,10 +120,7 @@
                 class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-cyan-400"
               />
 
-              <label
-                *ngIf="field.tipoCheckbox"
-                class="flex items-center gap-2 text-slate-300"
-              >
+              <label *ngIf="field.tipoCheckbox" class="flex items-center gap-2 text-slate-300">
                 <input
                   type="checkbox"
                   [(ngModel)]="formValues[field.nombre]"
@@ -128,21 +137,35 @@
                 />
               </div>
             </div>
-
-            <div class="pt-4 flex justify-end">
-              <button
-                type="button"
-                (click)="finishActivity()"
-                [disabled]="existingSubmission?.estado === 'COMPLETADA'"
-                class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-5 py-2 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {{ existingSubmission?.estado === 'COMPLETADA' ? 'Actividad ya completada' : 'Completar actividad' }}
-              </button>
-            </div>
           </form>
-        </div>
-      </div>
 
+          <div *ngIf="!loadingForm && !dynamicForm" class="bg-slate-950 border border-slate-800 rounded-xl p-5">
+            <h3 class="text-lg font-bold text-white">Sin formulario dinámico</h3>
+            <p class="text-sm text-slate-400 mt-1">
+              Esta tarea no tiene formulario asociado. Puedes completarla directamente.
+            </p>
+
+            <label class="block text-sm text-slate-300 mb-1 mt-4">Observación</label>
+            <textarea
+              [(ngModel)]="formValues['observacion']"
+              rows="4"
+              name="observacion"
+              class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-cyan-400"
+              placeholder="Observación de cierre"
+            ></textarea>
+          </div>
+
+          <div class="pt-4 flex justify-end">
+            <button
+              type="button"
+              (click)="finishTask()"
+              class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-5 py-2 rounded-xl transition"
+            >
+              Completar tarea
+            </button>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 </div>

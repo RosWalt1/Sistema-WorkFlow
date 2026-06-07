@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { DynamicForm, DynamicFormService } from '../../core/services/dynamic-form.service';
 import { FormSubmission, FormSubmissionService } from '../../core/services/form-submission.service';
 import { AuthService, LoginResponse } from '../../core/services/auth.service';
+import { TaskService, WorkflowTask } from '../../core/services/task.service';
 
 @Component({
   selector: 'app-tasks',
@@ -15,80 +16,66 @@ export class TasksComponent implements OnInit {
 
   user: LoginResponse | null = null;
 
-  activities = [
-    {
-      id: 'actividad-001',
-      nombre: 'Revisar solicitud',
-      descripcion: 'Actividad pendiente para revisar información del trámite.',
-      estado: 'Pendiente'
-    },
-    {
-      id: 'actividad-002',
-      nombre: 'Aprobar documento',
-      descripcion: 'Actividad para validar y aprobar documentación.',
-      estado: 'Pendiente'
-    },
-    {
-      id: 'actividad-003',
-      nombre: 'Finalizar proceso',
-      descripcion: 'Actividad final del flujo de trabajo.',
-      estado: 'Pendiente'
-    }
-  ];
+  tasks: WorkflowTask[] = [];
+  selectedTask: WorkflowTask | null = null;
 
-  selectedActivity: any = null;
   dynamicForm: DynamicForm | null = null;
   existingSubmission: FormSubmission | null = null;
   formValues: Record<string, any> = {};
+
+  loadingTasks = false;
   loadingForm = false;
   message = '';
 
   constructor(
     private dynamicFormService: DynamicFormService,
     private formSubmissionService: FormSubmissionService,
-    private authService: AuthService
+    private authService: AuthService,
+    private taskService: TaskService
   ) {}
 
   ngOnInit(): void {
     this.user = this.authService.getUser();
-    this.loadCompletedActivities();
+    this.loadPendingTasks();
   }
 
-  loadCompletedActivities(): void {
-    this.activities.forEach(activity => {
-      this.formSubmissionService.getByActivityId(activity.id).subscribe({
-        next: submission => {
-          if (submission.estado === 'COMPLETADA') {
-            activity.estado = 'Completada';
-          }
-        },
-        error: () => {}
-      });
+  loadPendingTasks(): void {
+    this.loadingTasks = true;
+
+    this.taskService.listarPendientes().subscribe({
+      next: data => {
+        this.tasks = data;
+        this.loadingTasks = false;
+      },
+      error: err => {
+        console.error('Error al cargar tareas', err);
+        this.message = 'No se pudieron cargar las tareas pendientes.';
+        this.loadingTasks = false;
+      }
     });
   }
 
-  executeActivity(activity: any): void {
-    this.selectedActivity = activity;
+  executeTask(task: WorkflowTask): void {
+    this.selectedTask = task;
     this.dynamicForm = null;
     this.existingSubmission = null;
     this.formValues = {};
     this.message = '';
     this.loadingForm = true;
 
-    this.formSubmissionService.getByActivityId(activity.id).subscribe({
+    this.formSubmissionService.getByActivityId(task.nodeId).subscribe({
       next: submission => {
         this.existingSubmission = submission;
 
         if (submission.estado === 'COMPLETADA') {
-          activity.estado = 'Completada';
           this.formValues = submission.respuestas;
-          this.message = 'Esta actividad ya fue completada anteriormente.';
+          this.message = 'Esta tarea ya tiene formulario completado anteriormente.';
         }
 
-        this.loadDynamicForm(activity.id);
+        this.loadDynamicForm(task.nodeId);
       },
       error: () => {
-        this.loadDynamicForm(activity.id);
+        this.loadDynamicForm(task.nodeId);
       }
     });
   }
@@ -106,40 +93,67 @@ export class TasksComponent implements OnInit {
         }
       },
       error: () => {
+        this.dynamicForm = null;
         this.loadingForm = false;
-        this.message = 'Esta actividad no tiene formulario dinámico asociado.';
+        this.message = 'Esta tarea no tiene formulario dinámico asociado. Puedes completarla sin formulario.';
       }
     });
   }
 
-  finishActivity(): void {
-    if (!this.selectedActivity || !this.dynamicForm || !this.user) return;
+  finishTask(): void {
+    if (!this.selectedTask || !this.selectedTask.id || !this.user) return;
 
-    const submission: FormSubmission = {
-      activityId: this.selectedActivity.id,
-      formId: this.dynamicForm.id || '',
+    const request = {
       userId: this.user.id,
+      formData: this.formValues,
       respuestas: this.formValues
     };
 
-    this.formSubmissionService.create(submission).subscribe({
-      next: saved => {
-        this.existingSubmission = saved;
-        this.selectedActivity.estado = 'Completada';
-        this.message = 'Actividad completada y guardada correctamente.';
+    if (this.dynamicForm) {
+      const submission: FormSubmission = {
+        activityId: this.selectedTask.nodeId,
+        formId: this.dynamicForm.id || '',
+        userId: this.user.id,
+        respuestas: this.formValues
+      };
+
+      this.formSubmissionService.create(submission).subscribe({
+        next: saved => {
+          this.existingSubmission = saved;
+          this.completeBackendTask(request);
+        },
+        error: err => {
+          console.error('Error al guardar formulario', err);
+          this.message = 'Ocurrió un error al guardar el formulario.';
+        }
+      });
+
+      return;
+    }
+
+    this.completeBackendTask(request);
+  }
+
+  completeBackendTask(request: { userId: string; formData: Record<string, any>; respuestas: Record<string, any> }): void {
+    if (!this.selectedTask?.id) return;
+
+    this.taskService.completar(this.selectedTask.id, request).subscribe({
+      next: () => {
+        this.message = 'Tarea completada correctamente. El proceso avanzó al siguiente nodo.';
+        this.closePanel();
+        this.loadPendingTasks();
       },
       error: err => {
-        console.error('Error al guardar ejecución', err);
-        this.message = 'Ocurrió un error al guardar la actividad.';
+        console.error('Error al completar tarea', err);
+        this.message = 'Ocurrió un error al completar la tarea.';
       }
     });
   }
 
   closePanel(): void {
-    this.selectedActivity = null;
+    this.selectedTask = null;
     this.dynamicForm = null;
     this.existingSubmission = null;
     this.formValues = {};
-    this.message = '';
   }
 }

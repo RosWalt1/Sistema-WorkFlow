@@ -12,6 +12,7 @@ import { BpmnEditorComponent } from './modules/bpmn-editor/bpmn-editor.component
 import { DynamicFormsComponent } from './modules/dynamic-forms/dynamic-forms.component';
 import { TasksComponent } from './modules/tasks/tasks.component';
 import { PolicyRequirementsComponent } from './modules/policy-requirements/policy-requirements.component';
+import { ProcessesComponent } from './modules/processes/processes.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -30,7 +31,8 @@ export const routes: Routes = [
       { path: 'business-policies/:id/editor', component: BpmnEditorComponent, canActivate: [authGuard] },
       {path: 'dynamic-forms', component: DynamicFormsComponent },
       {path: 'tasks', component: TasksComponent },
-      { path: 'policy-requirements', component: PolicyRequirementsComponent, canActivate: [authGuard] }
+      { path: 'policy-requirements', component: PolicyRequirementsComponent, canActivate: [authGuard] },
+      { path: 'processes', component: ProcessesComponent, canActivate: [authGuard] }
     ]
   },
 

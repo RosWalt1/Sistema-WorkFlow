@@ -22,6 +22,26 @@
         class="w-full mb-4 px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 focus:outline-none focus:border-cyan-400"
         placeholder="Describe el flujo de negocio"></textarea>
 
+      <label class="block text-sm text-slate-300 mb-1">Palabras clave</label>
+<textarea [(ngModel)]="keywordsText" rows="3"
+  class="w-full mb-4 px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 focus:outline-none focus:border-cyan-400"
+  placeholder="Una palabra clave por línea"></textarea>
+
+<label class="block text-sm text-slate-300 mb-1">Documentos requeridos</label>
+<textarea [(ngModel)]="requiredDocumentsText" rows="3"
+  class="w-full mb-4 px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 focus:outline-none focus:border-cyan-400"
+  placeholder="Un documento por línea"></textarea>
+
+<label class="block text-sm text-slate-300 mb-1">Duración estimada</label>
+<input [(ngModel)]="form.estimatedDuration"
+  class="w-full mb-4 px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 focus:outline-none focus:border-cyan-400"
+  placeholder="Ej: 3 días hábiles" />
+
+<label class="block text-sm text-slate-300 mb-1">Recomendado para</label>
+<input [(ngModel)]="form.recommendedFor"
+  class="w-full mb-4 px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 focus:outline-none focus:border-cyan-400"
+  placeholder="Ej: Clientes nuevos, solicitudes internas" />  
+
       <div class="flex gap-3">
         <button (click)="guardar()"
           class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold">

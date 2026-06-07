@@ -31,6 +31,12 @@ export interface BusinessPolicy {
   version?: number;
   diagramaJson: DiagramJson;
   bpmnXml?: string;
+
+  keywords?: string[];
+  requiredDocuments?: string[];
+  estimatedDuration?: string;
+  recommendedFor?: string;
+
   lockedBy?: string;
   lockedAt?: string;
 }

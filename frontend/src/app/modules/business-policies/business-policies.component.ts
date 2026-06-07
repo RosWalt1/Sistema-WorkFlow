@@ -22,6 +22,9 @@ export class BusinessPoliciesComponent implements OnInit {
   editando = false;
   selectedId: string | null = null;
 
+  keywordsText = '';
+  requiredDocumentsText = '';
+
   editorAbierto = false;
   policyEditor: BusinessPolicy | null = null;
 
@@ -34,7 +37,7 @@ export class BusinessPoliciesComponent implements OnInit {
 
   lanes: string[] = ['Funcionario', 'Humano', 'Técnico'];
 
-  constructor(private policyService: BusinessPolicyService) {}
+  constructor(private policyService: BusinessPolicyService) { }
 
   ngOnInit(): void {
     this.cargarPolicies();
@@ -44,6 +47,10 @@ export class BusinessPoliciesComponent implements OnInit {
     return {
       nombre: '',
       descripcion: '',
+      keywords: [],
+      requiredDocuments: [],
+      estimatedDuration: '',
+      recommendedFor: '',
       diagramaJson: {
         nodes: [],
         connections: []
@@ -61,13 +68,19 @@ export class BusinessPoliciesComponent implements OnInit {
   guardar(): void {
     if (!this.form.nombre.trim()) return;
 
+    const payload: BusinessPolicy = {
+      ...this.form,
+      keywords: this.parseLines(this.keywordsText),
+      requiredDocuments: this.parseLines(this.requiredDocumentsText)
+    };
+
     if (this.editando && this.selectedId) {
-      this.policyService.actualizar(this.selectedId, this.form).subscribe(() => {
+      this.policyService.actualizar(this.selectedId, payload).subscribe(() => {
         this.limpiarFormulario();
         this.cargarPolicies();
       });
     } else {
-      this.policyService.crear(this.form).subscribe(() => {
+      this.policyService.crear(payload).subscribe(() => {
         this.limpiarFormulario();
         this.cargarPolicies();
       });
@@ -78,6 +91,9 @@ export class BusinessPoliciesComponent implements OnInit {
     this.editando = true;
     this.selectedId = policy.id || null;
     this.form = JSON.parse(JSON.stringify(policy));
+
+    this.keywordsText = policy.keywords?.join('\n') || '';
+    this.requiredDocumentsText = policy.requiredDocuments?.join('\n') || '';
   }
 
   abrirEditor(policy: BusinessPolicy): void {
@@ -144,6 +160,8 @@ export class BusinessPoliciesComponent implements OnInit {
     this.editando = false;
     this.selectedId = null;
     this.form = this.nuevaPolicy();
+    this.keywordsText = '';
+    this.requiredDocumentsText = '';
   }
 
   agregarNodo(tipo: 'INICIO' | 'ACTIVIDAD' | 'DECISION' | 'FIN'): void {
@@ -413,24 +431,31 @@ export class BusinessPoliciesComponent implements OnInit {
     }
   }
   eliminarCarril(lane: string): void {
-  if (!this.policyEditor) return;
+    if (!this.policyEditor) return;
 
-  const nodosEnCarril = this.policyEditor.diagramaJson.nodes.filter(
-    n => n.calle === lane
-  );
+    const nodosEnCarril = this.policyEditor.diagramaJson.nodes.filter(
+      n => n.calle === lane
+    );
 
-  if (nodosEnCarril.length > 0) {
-    alert('No puedes eliminar este carril porque tiene nodos.');
-    return;
+    if (nodosEnCarril.length > 0) {
+      alert('No puedes eliminar este carril porque tiene nodos.');
+      return;
+    }
+
+    if (confirm(`¿Eliminar el carril "${lane}"?`)) {
+      this.lanes = this.lanes.filter(l => l !== lane);
+    }
   }
 
-  if (confirm(`¿Eliminar el carril "${lane}"?`)) {
-    this.lanes = this.lanes.filter(l => l !== lane);
+  getVistaTextualFlujo(): WorkflowConnection[] {
+    if (!this.policyEditor) return [];
+    return this.policyEditor.diagramaJson.connections;
   }
-}
 
-getVistaTextualFlujo(): WorkflowConnection[] {
-  if (!this.policyEditor) return [];
-  return this.policyEditor.diagramaJson.connections;
-}
+  private parseLines(value: string): string[] {
+  return value
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0);
+  }
 }

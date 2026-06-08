@@ -1,0 +1,156 @@
+<div class="min-h-screen bg-[#020617] text-white p-6">
+
+  <div class="mb-8">
+    <h1 class="text-3xl font-black text-cyan-300">
+      Reportes Dinámicos
+    </h1>
+
+    <p class="text-slate-400 mt-2">
+      Genera reportes mediante texto o voz y exporta a PDF, Excel o Word.
+    </p>
+  </div>
+
+  <div
+    *ngIf="errorMessage"
+    class="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-300">
+    {{ errorMessage }}
+  </div>
+
+  <div class="rounded-2xl border border-cyan-400/20 bg-white/5 p-6 mb-8">
+
+    <label class="block text-sm text-slate-400 mb-3">
+      Comando de reporte
+    </label>
+
+    <div class="flex flex-col lg:flex-row gap-3">
+
+      <input
+        [(ngModel)]="query"
+        type="text"
+        placeholder="Ejemplo: Muéstrame tareas pendientes"
+        class="flex-1 rounded-xl bg-[#020617] border border-cyan-400/20 px-4 py-3 text-slate-200 outline-none focus:border-cyan-400">
+
+      <button
+        *ngIf="speechSupported"
+        type="button"
+        (click)="startVoiceRecognition()"
+        class="px-5 py-3 rounded-xl bg-violet-500/10 border border-violet-400/30 text-violet-300 hover:bg-violet-500/20 transition">
+        🎤 Voz
+      </button>
+
+      <button
+        type="button"
+        (click)="generateReport()"
+        class="px-6 py-3 rounded-xl bg-cyan-500/10 border border-cyan-400/30 text-cyan-300 hover:bg-cyan-500/20 transition font-semibold">
+        Generar
+      </button>
+
+    </div>
+
+  </div>
+
+  <div *ngIf="loading"
+       class="rounded-xl border border-cyan-400/20 bg-white/5 p-6 text-center text-cyan-300">
+    Generando reporte...
+  </div>
+
+  <div
+    *ngIf="report"
+    class="rounded-2xl border border-cyan-400/20 bg-white/5 overflow-hidden">
+
+    <div class="p-5 border-b border-cyan-400/20">
+
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+
+        <div>
+          <h2 class="text-2xl font-bold text-cyan-300">
+            {{ report.title }}
+          </h2>
+
+          <p class="text-slate-400 mt-2">
+            {{ report.originalQuery }}
+          </p>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+
+          <button
+            type="button"
+            (click)="export('PDF')"
+            class="px-4 py-2 rounded-lg border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20">
+            PDF
+          </button>
+
+          <button
+            type="button"
+            (click)="export('EXCEL')"
+            class="px-4 py-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20">
+            Excel
+          </button>
+
+          <button
+            type="button"
+            (click)="export('WORD')"
+            class="px-4 py-2 rounded-lg border border-violet-500/30 bg-violet-500/10 text-violet-300 hover:bg-violet-500/20">
+            Word
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="overflow-x-auto">
+
+      <table class="w-full text-sm">
+
+        <thead class="bg-cyan-500/10 text-cyan-200">
+
+          <tr>
+
+            <th
+              *ngFor="let column of report.columns"
+              class="text-left px-4 py-3">
+              {{ column.label }}
+            </th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          <tr
+            *ngFor="let row of report.rows"
+            class="border-t border-cyan-400/10 hover:bg-white/5">
+
+            <td
+              *ngFor="let key of getColumnKeys()"
+              class="px-4 py-3 text-slate-300">
+              {{ row.values[key] }}
+            </td>
+
+          </tr>
+
+          <tr *ngIf="report.rows.length === 0">
+
+            <td
+              [attr.colspan]="report.columns.length"
+              class="px-4 py-8 text-center text-slate-400">
+
+              No existen registros para mostrar.
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+</div>

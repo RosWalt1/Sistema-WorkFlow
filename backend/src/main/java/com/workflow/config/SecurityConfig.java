@@ -52,6 +52,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/departments/**").hasRole("ADMIN")
                         .requestMatchers("/api/dynamic-forms/**").hasRole("ADMIN")
                         .requestMatchers("/api/form-submissions/**").hasRole("ADMIN")
+                        .requestMatchers("/api/reports/**").hasAnyRole("ADMIN", "SUPERVISOR")
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -1,0 +1,15 @@
+package com.workflow.model;
+
+public enum ReportIntent {
+    TASKS_PENDING,
+    TASKS_COMPLETED,
+    PROCESSES_ACTIVE,
+    PROCESSES_FINISHED,
+    PROCESSES_CANCELLED,
+    ANOMALIES_OPEN,
+    ANOMALIES_CRITICAL,
+    BOTTLENECKS,
+    MOST_USED_POLICY,
+    DELAYED_TASKS,
+    UNKNOWN
+}

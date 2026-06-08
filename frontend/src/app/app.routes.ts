@@ -15,6 +15,7 @@ import { PolicyRequirementsComponent } from './modules/policy-requirements/polic
 import { ProcessesComponent } from './modules/processes/processes.component';
 import { MonitoringComponent } from './modules/monitoring/monitoring.component';
 import { RiskAnalysisComponent } from './modules/risk-analysis/risk-analysis.component';
+import { ReportsComponent } from './modules/reports/reports.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -36,7 +37,8 @@ export const routes: Routes = [
       { path: 'policy-requirements', component: PolicyRequirementsComponent, canActivate: [authGuard] },
       { path: 'processes', component: ProcessesComponent, canActivate: [authGuard] },
       { path: 'monitoring', component: MonitoringComponent, canActivate: [authGuard] },
-      { path: 'risk-analysis', component: RiskAnalysisComponent, canActivate: [authGuard] }
+      { path: 'risk-analysis', component: RiskAnalysisComponent, canActivate: [authGuard] },
+      { path: 'reports', component: ReportsComponent, canActivate: [authGuard] }
     ]
   },
 

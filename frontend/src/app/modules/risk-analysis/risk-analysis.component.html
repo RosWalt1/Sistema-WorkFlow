@@ -1,0 +1,154 @@
+<div class="min-h-screen bg-[#020617] text-white p-6">
+
+  <div class="mb-8">
+    <h1 class="text-3xl font-black text-cyan-300">
+      Motor Inteligente de Riesgo
+    </h1>
+
+    <p class="text-slate-400 mt-2">
+      Detección de anomalías, cuellos de botella y riesgos operativos.
+    </p>
+  </div>
+
+  <div
+    *ngIf="errorMessage"
+    class="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-red-300">
+    {{ errorMessage }}
+  </div>
+
+  <div
+    *ngIf="dashboard"
+    class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4 mb-8">
+
+    <div class="rounded-2xl bg-white/5 border border-cyan-400/20 p-5">
+      <p class="text-slate-400">Anomalías</p>
+      <p class="text-3xl font-black mt-2">
+        {{ dashboard.totalAnomalies }}
+      </p>
+    </div>
+
+    <div class="rounded-2xl bg-red-500/10 border border-red-500/20 p-5">
+      <p class="text-red-200">Críticas</p>
+      <p class="text-3xl font-black mt-2">
+        {{ dashboard.criticalRisk }}
+      </p>
+    </div>
+
+    <div class="rounded-2xl bg-orange-500/10 border border-orange-500/20 p-5">
+      <p class="text-orange-200">Altas</p>
+      <p class="text-3xl font-black mt-2">
+        {{ dashboard.highRisk }}
+      </p>
+    </div>
+
+    <div class="rounded-2xl bg-yellow-500/10 border border-yellow-500/20 p-5">
+      <p class="text-yellow-200">Demoradas</p>
+      <p class="text-3xl font-black mt-2">
+        {{ dashboard.delayedTasks }}
+      </p>
+    </div>
+
+    <div class="rounded-2xl bg-cyan-500/10 border border-cyan-500/20 p-5">
+      <p class="text-cyan-200">Procesos activos</p>
+      <p class="text-3xl font-black mt-2">
+        {{ dashboard.activeProcesses }}
+      </p>
+    </div>
+
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+    <div class="rounded-2xl border border-cyan-400/20 bg-white/5">
+
+      <div class="p-5 border-b border-cyan-400/20">
+        <h2 class="text-xl font-bold text-cyan-300">
+          Anomalías detectadas
+        </h2>
+      </div>
+
+      <div class="p-5 space-y-4">
+
+        <div
+          *ngFor="let anomaly of anomalies"
+          class="rounded-xl border border-cyan-400/10 bg-[#020617] p-4">
+
+          <div class="flex justify-between items-start gap-4">
+
+            <div>
+              <p class="font-semibold text-white">
+                {{ anomaly.descripcion }}
+              </p>
+
+              <p class="text-sm text-slate-400 mt-2">
+                {{ anomaly.accionRecomendada }}
+              </p>
+
+              <p class="text-xs text-slate-500 mt-2">
+                {{ formatDate(anomaly.fecha) }}
+              </p>
+            </div>
+
+            <span
+              class="rounded-full border px-3 py-1 text-xs font-semibold"
+              [ngClass]="getSeverityClass(anomaly.severidad)">
+              {{ anomaly.severidad }}
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="rounded-2xl border border-violet-400/20 bg-white/5">
+
+      <div class="p-5 border-b border-violet-400/20">
+        <h2 class="text-xl font-bold text-violet-300">
+          Cuellos de botella
+        </h2>
+      </div>
+
+      <div class="p-5 space-y-4">
+
+        <div
+          *ngFor="let bottleneck of bottlenecks"
+          class="rounded-xl border border-violet-400/10 bg-[#020617] p-4">
+
+          <div class="flex justify-between items-start gap-4">
+
+            <div>
+
+              <p class="font-semibold text-white">
+                {{ bottleneck.assignedTo }}
+              </p>
+
+              <p class="text-sm text-slate-400 mt-2">
+                {{ bottleneck.descripcion }}
+              </p>
+
+              <p class="text-sm text-cyan-300 mt-2">
+                {{ bottleneck.pendingTasks }} tareas pendientes
+              </p>
+
+            </div>
+
+            <span
+              class="rounded-full border px-3 py-1 text-xs font-semibold"
+              [ngClass]="getSeverityClass(bottleneck.severidad)">
+              {{ bottleneck.severidad }}
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

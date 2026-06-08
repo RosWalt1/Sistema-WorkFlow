@@ -17,14 +17,18 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final ProcessInstanceRepository processInstanceRepository;
     private final BusinessPolicyRepository businessPolicyRepository;
+    private final RiskAnalysisService riskAnalysisService;
 
     public TaskService(
             TaskRepository taskRepository,
             ProcessInstanceRepository processInstanceRepository,
-            BusinessPolicyRepository businessPolicyRepository) {
+            BusinessPolicyRepository businessPolicyRepository,
+            RiskAnalysisService riskAnalysisService) {
+
         this.taskRepository = taskRepository;
         this.processInstanceRepository = processInstanceRepository;
         this.businessPolicyRepository = businessPolicyRepository;
+        this.riskAnalysisService = riskAnalysisService;
     }
 
     public List<Task> findAll() {
@@ -87,7 +91,13 @@ public class TaskService {
         avanzarProceso(instance, policy, task);
 
         Task savedTask = taskRepository.save(task);
-        return Objects.requireNonNull(savedTask, "No se pudo completar la tarea");
+
+        riskAnalysisService.analyzeAfterTaskCompleted(savedTask);
+
+        return Objects.requireNonNull(
+                savedTask,
+                "No se pudo completar la tarea"
+        );
     }
 
     public Task createInitialTask(ProcessInstance instance, BusinessPolicy policy, WorkflowNode initialNode) {
@@ -168,6 +178,7 @@ public class TaskService {
             String accion,
             String detalle,
             String nodeId) {
+
         WorkflowHistory history = new WorkflowHistory();
         history.setFecha(LocalDateTime.now());
         history.setAccion(accion);

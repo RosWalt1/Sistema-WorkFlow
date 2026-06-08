@@ -24,6 +24,7 @@ export class SidebarComponent {
     { label: 'Trámites', route: '/processes' },
     { label: 'Mis Actividades', route: '/tasks' },
     { label: 'Monitoreo', route: '/monitoring' },
+    { label: 'Motor de Riesgo', route: '/risk-analysis' },
     { label: 'Asistente IA', route: '/ai' },
     { label: 'Repositorio Documental', route: '/documents' },
     { label: 'Reportes', route: '/reports' }

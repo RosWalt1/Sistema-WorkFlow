@@ -1,0 +1,202 @@
+<div class="min-h-screen bg-slate-950 text-white p-6">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <div>
+      <h1 class="text-3xl font-bold text-cyan-400">Agente Inteligente de Recepción</h1>
+      <p class="text-slate-400 mt-1">
+        Analiza solicitudes de usuarios y recomienda el trámite más adecuado según las políticas activas.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg">
+        <h2 class="text-xl font-semibold mb-4">Nueva solicitud</h2>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm text-slate-300 mb-1">Solicitud del usuario</label>
+            <textarea
+              [(ngModel)]="mensaje"
+              rows="6"
+              class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-400 resize-none"
+              placeholder="Ej: Quiero iniciar un trámite de vacaciones"
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm text-slate-300 mb-1">Cliente / Usuario actual</label>
+            <input
+              type="text"
+              [(ngModel)]="clienteId"
+              class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2 text-slate-300 focus:outline-none focus:border-cyan-400"
+              readonly
+            />
+          </div>
+
+          <div *ngIf="errorMessage" class="bg-red-500/10 border border-red-500/30 text-red-300 rounded-xl p-3 text-sm">
+            {{ errorMessage }}
+          </div>
+
+          <div *ngIf="successMessage" class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 rounded-xl p-3 text-sm">
+            {{ successMessage }}
+          </div>
+
+          <div class="flex flex-wrap gap-3 pt-2">
+            <button
+              type="button"
+              (click)="analyze()"
+              [disabled]="loading"
+              class="bg-cyan-500 hover:bg-cyan-400 disabled:opacity-60 text-slate-950 font-bold px-5 py-2 rounded-xl transition"
+            >
+              {{ loading ? 'Analizando...' : 'Analizar solicitud' }}
+            </button>
+
+            <button
+              type="button"
+              (click)="clear()"
+              class="bg-slate-800 hover:bg-slate-700 text-white font-semibold px-5 py-2 rounded-xl transition"
+            >
+              Limpiar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg">
+        <h2 class="text-xl font-semibold mb-4 text-violet-400">Resultado del análisis</h2>
+
+        <div *ngIf="!analysis" class="bg-slate-950 border border-dashed border-slate-700 rounded-xl p-6 text-slate-500 text-sm">
+          Escribe una solicitud y presiona “Analizar solicitud”.
+        </div>
+
+        <div *ngIf="analysis" class="bg-slate-950 border border-slate-800 rounded-xl p-5 space-y-4">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="text-sm text-slate-400">Intención detectada</p>
+              <h3 class="text-lg font-bold" [class.text-emerald-400]="analysis.found" [class.text-red-400]="!analysis.found">
+                {{ analysis.intention }}
+              </h3>
+            </div>
+
+            <div class="text-right">
+              <p class="text-sm text-slate-400">Puntaje</p>
+              <p class="text-2xl font-bold text-cyan-400">{{ analysis.score }}</p>
+            </div>
+          </div>
+
+          <div *ngIf="analysis.found" class="space-y-4">
+            <div>
+              <p class="text-sm text-slate-400">Trámite recomendado</p>
+              <h3 class="text-2xl font-bold text-white">
+                {{ analysis.recommendedPolicyName }}
+              </h3>
+            </div>
+
+            <div *ngIf="analysis.descripcion">
+              <p class="text-sm text-slate-400">Descripción</p>
+              <p class="text-slate-300">{{ analysis.descripcion }}</p>
+            </div>
+
+            <div *ngIf="analysis.estimatedDuration">
+              <p class="text-sm text-slate-400">Duración estimada</p>
+              <p class="text-cyan-300">{{ analysis.estimatedDuration }}</p>
+            </div>
+
+            <div *ngIf="analysis.recommendedFor">
+              <p class="text-sm text-slate-400">Recomendado para</p>
+              <p class="text-slate-300">{{ analysis.recommendedFor }}</p>
+            </div>
+
+            <div>
+              <p class="text-sm text-slate-400 mb-2">Documentos requeridos</p>
+
+              <div *ngIf="analysis.requiredDocuments.length === 0" class="text-slate-500 text-sm">
+                No hay documentos requeridos configurados.
+              </div>
+
+              <div class="flex flex-wrap gap-2">
+                <span
+                  *ngFor="let document of analysis.requiredDocuments"
+                  class="bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 px-3 py-1 rounded-full text-sm"
+                >
+                  {{ document }}
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              (click)="startProcess()"
+              [disabled]="starting"
+              class="w-full bg-violet-500 hover:bg-violet-400 disabled:opacity-60 text-white font-bold px-5 py-3 rounded-xl transition"
+            >
+              {{ starting ? 'Iniciando trámite...' : 'Iniciar trámite recomendado' }}
+            </button>
+          </div>
+
+          <div *ngIf="!analysis.found" class="bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 rounded-xl p-4 text-sm">
+            No se encontró una política activa relacionada. Revisa que la política tenga keywords configuradas y esté activa.
+          </div>
+
+          <div *ngIf="createdProcess" class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4">
+            <p class="text-emerald-300 font-semibold">Proceso creado</p>
+            <p class="text-sm text-slate-300 mt-1">ID: {{ createdProcess.id }}</p>
+            <p class="text-sm text-slate-300">Estado: {{ createdProcess.estado }}</p>
+            <p class="text-sm text-slate-300">Actividad actual: {{ createdProcess.currentNodeName || 'Sin actividad' }}</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg">
+      <h2 class="text-xl font-semibold mb-4">Historial del agente</h2>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-left text-slate-400 border-b border-slate-800">
+              <th class="py-3 px-3">Fecha</th>
+              <th class="py-3 px-3">Mensaje</th>
+              <th class="py-3 px-3">Intención</th>
+              <th class="py-3 px-3">Política</th>
+              <th class="py-3 px-3">Proceso</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let item of history" class="border-b border-slate-800 hover:bg-slate-800/40">
+              <td class="py-3 px-3 text-slate-400">{{ item.fecha | date:'short' }}</td>
+              <td class="py-3 px-3 text-white max-w-md truncate">{{ item.mensaje }}</td>
+              <td class="py-3 px-3 text-cyan-400">{{ item.intention }}</td>
+              <td class="py-3 px-3 text-slate-300">{{ item.recommendedPolicyName || 'Sin coincidencia' }}</td>
+              <td class="py-3 px-3">
+                <span
+                  *ngIf="item.processStarted"
+                  class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 px-3 py-1 rounded-full text-xs"
+                >
+                  Iniciado
+                </span>
+
+                <span
+                  *ngIf="!item.processStarted"
+                  class="bg-slate-800 text-slate-400 px-3 py-1 rounded-full text-xs"
+                >
+                  Solo análisis
+                </span>
+              </td>
+            </tr>
+
+            <tr *ngIf="history.length === 0">
+              <td colspan="5" class="py-6 text-center text-slate-500">
+                No hay interacciones registradas.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>

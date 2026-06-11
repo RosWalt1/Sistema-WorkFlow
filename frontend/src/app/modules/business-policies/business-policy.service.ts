@@ -41,6 +41,29 @@ export interface BusinessPolicy {
   lockedAt?: string;
 }
 
+export interface PolicyVersion {
+  id: string;
+  policyId: string;
+  versionNumber: number;
+  policySnapshot?: BusinessPolicy;
+  diagramJson?: DiagramJson;
+  createdBy: string;
+  createdAt: string;
+  description?: string;
+}
+
+export interface PolicyComment {
+  id: string;
+  policyId: string;
+  userId: string;
+  userName?: string;
+  message?: string;
+  comentario?: string;
+  resolved?: boolean;
+  createdAt?: string;
+  resolvedAt?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -72,5 +95,49 @@ export class BusinessPolicyService {
 
   activar(id: string): Observable<BusinessPolicy> {
     return this.http.patch<BusinessPolicy>(`${this.apiUrl}/${id}/activate`, {});
+  }
+
+  lock(id: string, userId: string): Observable<BusinessPolicy> {
+    return this.http.post<BusinessPolicy>(`${this.apiUrl}/${id}/lock`, { userId });
+  }
+
+  unlock(id: string, userId: string): Observable<BusinessPolicy> {
+    return this.http.post<BusinessPolicy>(`${this.apiUrl}/${id}/unlock`, { userId });
+  }
+
+  createVersion(id: string, createdBy: string, description: string): Observable<PolicyVersion> {
+    return this.http.post<PolicyVersion>(`${this.apiUrl}/${id}/versions`, {
+      createdBy,
+      description
+    });
+  }
+
+  getVersions(id: string): Observable<PolicyVersion[]> {
+    return this.http.get<PolicyVersion[]>(`${this.apiUrl}/${id}/versions`);
+  }
+
+  restoreVersion(id: string, versionId: string): Observable<BusinessPolicy> {
+    return this.http.post<BusinessPolicy>(`${this.apiUrl}/${id}/versions/${versionId}/restore`, {});
+  }
+
+  createComment(id: string, userId: string, userName: string, message: string): Observable<PolicyComment> {
+    return this.http.post<PolicyComment>(`${this.apiUrl}/${id}/comments`, {
+      userId,
+      userName,
+      message,
+      comentario: message
+    });
+  }
+
+  getComments(id: string): Observable<PolicyComment[]> {
+    return this.http.get<PolicyComment[]>(`${this.apiUrl}/${id}/comments`);
+  }
+
+  resolveComment(id: string, commentId: string): Observable<PolicyComment> {
+    return this.http.patch<PolicyComment>(`${this.apiUrl}/${id}/comments/${commentId}/resolve`, {});
+  }
+
+  deleteComment(id: string, commentId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}/comments/${commentId}`);
   }
 }

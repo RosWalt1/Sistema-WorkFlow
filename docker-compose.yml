@@ -8,5 +8,19 @@ services:
     volumes:
       - workflow_mongo_data:/data/db
 
+  onlyoffice:
+    image: onlyoffice/documentserver:latest
+    container_name: workflow_onlyoffice
+    restart: always
+    ports:
+      - "8082:80"
+    environment:
+      - JWT_ENABLED=false
+    volumes:
+      - workflow_onlyoffice_data:/var/www/onlyoffice/Data
+      - workflow_onlyoffice_logs:/var/log/onlyoffice
+
 volumes:
   workflow_mongo_data:
+  workflow_onlyoffice_data:
+  workflow_onlyoffice_logs:

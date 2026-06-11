@@ -1,7 +1,13 @@
 import { NgFor, NgIf, DatePipe, DecimalPipe } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { DocumentFile, DocumentLog, DocumentService } from '../../core/services/document.service';
+import { Router } from '@angular/router';
+import {
+  DocumentFile,
+  DocumentLog,
+  DocumentService,
+  DocumentVersion
+} from '../../core/services/document.service';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -19,6 +25,9 @@ export class DocumentsComponent {
 
   documents: DocumentFile[] = [];
   history: DocumentLog[] = [];
+  versions: DocumentVersion[] = [];
+
+  selectedDocument: DocumentFile | null = null;
 
   loading = false;
   message = '';
@@ -26,7 +35,8 @@ export class DocumentsComponent {
 
   constructor(
     private documentService: DocumentService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   onFileSelected(event: Event): void {
@@ -69,7 +79,7 @@ export class DocumentsComponent {
         this.loadByProcess();
       },
       error: () => {
-        this.error = 'No se pudo subir el documento. Verifique MinIO y el backend.';
+        this.error = 'No se pudo subir el documento. Verifique AWS S3 y el backend.';
         this.loading = false;
       },
       complete: () => {
@@ -92,6 +102,8 @@ export class DocumentsComponent {
       next: data => {
         this.documents = data;
         this.history = [];
+        this.versions = [];
+        this.selectedDocument = null;
       },
       error: () => {
         this.error = 'No se pudieron cargar los documentos.';
@@ -128,6 +140,7 @@ export class DocumentsComponent {
 
   viewHistory(document: DocumentFile): void {
     this.clearMessages();
+    this.selectedDocument = document;
 
     this.documentService.getDocumentHistory(document.id).subscribe({
       next: data => {
@@ -137,6 +150,25 @@ export class DocumentsComponent {
         this.error = 'No se pudo cargar el historial del documento.';
       }
     });
+  }
+
+  viewVersions(document: DocumentFile): void {
+    this.clearMessages();
+    this.selectedDocument = document;
+
+    this.documentService.getDocumentVersions(document.id).subscribe({
+      next: data => {
+        this.versions = data;
+        this.message = 'Versiones documentales cargadas.';
+      },
+      error: () => {
+        this.error = 'No se pudieron cargar las versiones del documento.';
+      }
+    });
+  }
+
+  openOnlyOffice(document: DocumentFile): void {
+    this.router.navigate(['/documents', document.id, 'onlyoffice']);
   }
 
   private clearMessages(): void {

@@ -29,6 +29,16 @@ export interface DocumentLog {
   fecha: string;
 }
 
+export interface DocumentVersion {
+  id: string;
+  documentId: string;
+  versionNumber: number;
+  fileName?: string;
+  objectKey?: string;
+  createdBy?: string;
+  createdAt?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -71,6 +81,18 @@ export class DocumentService {
   getDocumentHistory(documentId: string): Observable<DocumentLog[]> {
     return this.http.get<DocumentLog[]>(`${this.apiUrl}/${documentId}/history`);
   }
+
+  getDocumentVersions(documentId: string): Observable<DocumentVersion[]> {
+    return this.http.get<DocumentVersion[]>(`${this.apiUrl}/${documentId}/versions`);
+  }
+
+  getOnlyOfficeConfig(documentId: string, userId: string): Observable<any> {
+  const params = new HttpParams().set('userId', userId);
+
+  return this.http.get<any>(`${this.apiUrl}/${documentId}/onlyoffice/config`, {
+    params
+  });
+}
 
   downloadDocument(documentId: string, userId: string): Observable<Blob> {
     const params = new HttpParams().set('userId', userId);

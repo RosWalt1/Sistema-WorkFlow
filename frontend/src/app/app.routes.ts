@@ -18,6 +18,7 @@ import { RiskAnalysisComponent } from './modules/risk-analysis/risk-analysis.com
 import { ReportsComponent } from './modules/reports/reports.component';
 import { DocumentsComponent } from './modules/documents/documents.component';
 import { AiComponent } from './modules/ai/ai.component';
+import { OnlyofficeEditorComponent } from './modules/documents/onlyoffice-editor.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -42,7 +43,8 @@ export const routes: Routes = [
       { path: 'risk-analysis', component: RiskAnalysisComponent, canActivate: [authGuard] },
       { path: 'ai', component: AiComponent, canActivate: [authGuard] },
       { path: 'reports', component: ReportsComponent, canActivate: [authGuard] },
-      { path: 'documents', component: DocumentsComponent, canActivate: [authGuard] }
+      { path: 'documents', component: DocumentsComponent, canActivate: [authGuard] },
+      { path: 'documents/:id/onlyoffice', component: OnlyofficeEditorComponent, canActivate: [authGuard] }
     ]
   },
 

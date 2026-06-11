@@ -35,6 +35,18 @@ public class S3Service {
         return objectKey;
     }
 
+    public String uploadBytes(byte[] bytes, String objectKey, String contentType) {
+        PutObjectRequest request = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(objectKey)
+                .contentType(contentType)
+                .contentLength((long) bytes.length)
+                .build();
+
+        s3Client.putObject(request, RequestBody.fromBytes(bytes));
+        return objectKey;
+    }
+
     public InputStream downloadFile(String objectKey) {
         GetObjectRequest request = GetObjectRequest.builder()
                 .bucket(bucketName)

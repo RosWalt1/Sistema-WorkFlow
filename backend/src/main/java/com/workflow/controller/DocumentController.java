@@ -2,6 +2,7 @@ package com.workflow.controller;
 
 import com.workflow.model.DocumentFile;
 import com.workflow.model.DocumentLog;
+import com.workflow.model.DocumentVersion;
 import com.workflow.service.DocumentService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -12,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/documents")
@@ -61,6 +63,31 @@ public class DocumentController {
             @PathVariable String documentId
     ) {
         return ResponseEntity.ok(documentService.getDocumentHistory(documentId));
+    }
+
+    @GetMapping("/{documentId}/versions")
+    public ResponseEntity<List<DocumentVersion>> getDocumentVersions(
+            @PathVariable String documentId
+    ) {
+        return ResponseEntity.ok(documentService.getDocumentVersions(documentId));
+    }
+
+    @GetMapping("/{documentId}/onlyoffice/config")
+    public ResponseEntity<Map<String, Object>> getOnlyOfficeConfig(
+            @PathVariable String documentId,
+            @RequestParam("userId") String userId
+    ) {
+        return ResponseEntity.ok(documentService.getOnlyOfficeConfig(documentId, userId));
+    }
+
+    @PostMapping("/onlyoffice/callback")
+    public ResponseEntity<Map<String, Integer>> onlyOfficeCallback(
+            @RequestParam("documentId") String documentId,
+            @RequestParam("userId") String userId,
+            @RequestBody Map<String, Object> body
+    ) {
+        documentService.handleOnlyOfficeCallback(documentId, userId, body);
+        return ResponseEntity.ok(Map.of("error", 0));
     }
 
     @GetMapping("/{documentId}/download")

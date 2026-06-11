@@ -4,9 +4,12 @@ import { FormsModule } from '@angular/forms';
 import {
   BusinessPolicy,
   BusinessPolicyService,
+  PolicyComment,
+  PolicyVersion,
   WorkflowConnection,
   WorkflowNode
 } from './business-policy.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-business-policies',
@@ -37,7 +40,18 @@ export class BusinessPoliciesComponent implements OnInit {
 
   lanes: string[] = ['Funcionario', 'Humano', 'Técnico'];
 
-  constructor(private policyService: BusinessPolicyService) { }
+  versions: PolicyVersion[] = [];
+  comments: PolicyComment[] = [];
+  newComment = '';
+  versionDescription = '';
+
+  collaborationMessage = '';
+  collaborationError = '';
+
+  constructor(
+    private policyService: BusinessPolicyService,
+    private authService: AuthService
+  ) { }
 
   ngOnInit(): void {
     this.cargarPolicies();
@@ -97,45 +111,102 @@ export class BusinessPoliciesComponent implements OnInit {
   }
 
   abrirEditor(policy: BusinessPolicy): void {
-    this.policyEditor = JSON.parse(JSON.stringify(policy));
+    if (!policy.id) return;
 
-    if (!this.policyEditor) return;
+    const user = this.authService.getUser();
 
-    if (!this.policyEditor.diagramaJson) {
-      this.policyEditor.diagramaJson = { nodes: [], connections: [] };
+    if (!user) {
+      alert('No se encontró el usuario autenticado.');
+      return;
     }
 
-    if (!this.policyEditor.diagramaJson.nodes) {
-      this.policyEditor.diagramaJson.nodes = [];
-    }
+    this.limpiarMensajesColaboracion();
 
-    if (!this.policyEditor.diagramaJson.connections) {
-      this.policyEditor.diagramaJson.connections = [];
-    }
+    this.policyService.lock(policy.id, user.id).subscribe({
+      next: lockedPolicy => {
+        this.inicializarEditor(lockedPolicy);
+        this.collaborationMessage = 'Bloqueo obtenido. Puedes editar el diagrama.';
+        this.cargarVersionesYComentarios();
+      },
+      error: err => {
+        console.error('Error al bloquear política', err);
 
-    this.lanes = this.obtenerCarrilesDesdeNodos();
-
-    if (this.lanes.length === 0) {
-      this.lanes = ['Funcionario', 'Humano', 'Técnico'];
-    }
-
-    this.editMode = true;
-    this.editorAbierto = true;
-    this.selectedNodeId = null;
-    this.connectingFromId = null;
-    this.draggingNode = null;
-    this.dragStarted = false;
-
-    this.normalizarNodos();
+        this.policyService.obtenerPorId(policy.id as string).subscribe({
+          next: currentPolicy => {
+            this.inicializarEditor(currentPolicy);
+            this.editMode = false;
+            this.collaborationError = 'El diagrama está bloqueado por otro usuario. Solo puedes visualizarlo.';
+            this.cargarVersionesYComentarios();
+          },
+          error: () => {
+            alert('No se pudo abrir el editor.');
+          }
+        });
+      }
+    });
   }
 
+  inicializarEditor(policy: BusinessPolicy): void {
+  const editor: BusinessPolicy = JSON.parse(JSON.stringify(policy));
+
+  if (!editor.diagramaJson) {
+    editor.diagramaJson = { nodes: [], connections: [] };
+  }
+
+  if (!editor.diagramaJson.nodes) {
+    editor.diagramaJson.nodes = [];
+  }
+
+  if (!editor.diagramaJson.connections) {
+    editor.diagramaJson.connections = [];
+  }
+
+  this.policyEditor = editor;
+
+  this.lanes = this.obtenerCarrilesDesdeNodos();
+
+  if (this.lanes.length === 0) {
+    this.lanes = ['Funcionario', 'Humano', 'Técnico'];
+  }
+
+  this.editorAbierto = true;
+  this.selectedNodeId = null;
+  this.connectingFromId = null;
+  this.draggingNode = null;
+  this.dragStarted = false;
+  this.versionDescription = '';
+  this.newComment = '';
+
+  this.normalizarNodos();
+}
+
   volverListado(): void {
+    const user = this.authService.getUser();
+
+    if (this.policyEditor?.id && user && this.editMode) {
+      this.policyService.unlock(this.policyEditor.id, user.id).subscribe({
+        next: () => this.cerrarEditorLocal(),
+        error: () => this.cerrarEditorLocal()
+      });
+    } else {
+      this.cerrarEditorLocal();
+    }
+  }
+
+  cerrarEditorLocal(): void {
     this.editorAbierto = false;
     this.policyEditor = null;
     this.selectedNodeId = null;
     this.connectingFromId = null;
     this.draggingNode = null;
     this.dragStarted = false;
+    this.editMode = true;
+    this.versions = [];
+    this.comments = [];
+    this.newComment = '';
+    this.versionDescription = '';
+    this.limpiarMensajesColaboracion();
+    this.cargarPolicies();
   }
 
   activar(policy: BusinessPolicy): void {
@@ -165,7 +236,7 @@ export class BusinessPoliciesComponent implements OnInit {
   }
 
   agregarNodo(tipo: 'INICIO' | 'ACTIVIDAD' | 'DECISION' | 'FIN'): void {
-    if (!this.policyEditor) return;
+    if (!this.policyEditor || !this.editMode) return;
 
     const lane = this.lanes[0] || 'Sin responsable asignado';
 
@@ -199,6 +270,8 @@ export class BusinessPoliciesComponent implements OnInit {
 
     this.selectedNodeId = node.id;
 
+    if (!this.editMode) return;
+
     if (this.connectingFromId && this.connectingFromId !== node.id) {
       this.crearConexion(this.connectingFromId, node.id);
       this.connectingFromId = null;
@@ -206,12 +279,14 @@ export class BusinessPoliciesComponent implements OnInit {
   }
 
   iniciarConexion(node: WorkflowNode): void {
+    if (!this.editMode) return;
+
     this.connectingFromId = node.id;
     this.selectedNodeId = node.id;
   }
 
   crearConexion(origen: string, destino: string): void {
-    if (!this.policyEditor) return;
+    if (!this.policyEditor || !this.editMode) return;
 
     const existe = this.policyEditor.diagramaJson.connections.some(
       c => c.origen === origen && c.destino === destino
@@ -229,12 +304,12 @@ export class BusinessPoliciesComponent implements OnInit {
   }
 
   eliminarConexion(index: number): void {
-    if (!this.policyEditor) return;
+    if (!this.policyEditor || !this.editMode) return;
     this.policyEditor.diagramaJson.connections.splice(index, 1);
   }
 
   eliminarNodo(nodeId: string): void {
-    if (!this.policyEditor) return;
+    if (!this.policyEditor || !this.editMode) return;
 
     this.policyEditor.diagramaJson.nodes =
       this.policyEditor.diagramaJson.nodes.filter(n => n.id !== nodeId);
@@ -250,12 +325,16 @@ export class BusinessPoliciesComponent implements OnInit {
   }
 
   moverNodo(node: WorkflowNode, dx: number, dy: number): void {
+    if (!this.editMode) return;
+
     node.posicionX = Math.max(300, node.posicionX + dx);
     node.posicionY = Math.max(20, node.posicionY + dy);
     node.calle = this.getLaneByY(node.posicionY);
   }
 
   iniciarArrastre(event: MouseEvent, node: WorkflowNode): void {
+    if (!this.editMode) return;
+
     event.preventDefault();
     event.stopPropagation();
 
@@ -265,7 +344,7 @@ export class BusinessPoliciesComponent implements OnInit {
   }
 
   arrastrarNodo(event: MouseEvent): void {
-    if (!this.draggingNode) return;
+    if (!this.draggingNode || !this.editMode) return;
 
     if (event.buttons !== 1) {
       this.finalizarArrastre();
@@ -308,7 +387,7 @@ export class BusinessPoliciesComponent implements OnInit {
   }
 
   guardarDiagrama(): void {
-    if (!this.policyEditor || !this.policyEditor.id) return;
+    if (!this.policyEditor || !this.policyEditor.id || !this.editMode) return;
 
     this.normalizarNodos();
 
@@ -316,12 +395,135 @@ export class BusinessPoliciesComponent implements OnInit {
       next: updated => {
         this.policyEditor = JSON.parse(JSON.stringify(updated));
         this.cargarPolicies();
-        alert('Diagrama guardado correctamente');
+        this.collaborationMessage = 'Diagrama guardado correctamente.';
+        this.collaborationError = '';
       },
       error: err => {
         console.error('Error al guardar diagrama', err);
-        alert('Error al guardar diagrama');
+        this.collaborationError = 'Error al guardar diagrama.';
+        this.collaborationMessage = '';
       }
+    });
+  }
+
+  crearVersionDiagrama(): void {
+    if (!this.policyEditor?.id) return;
+
+    const user = this.authService.getUser();
+
+    if (!user) {
+      this.collaborationError = 'No se encontró el usuario autenticado.';
+      return;
+    }
+
+    const description = this.versionDescription.trim() || 'Versión manual del diagrama';
+
+    this.policyService.createVersion(this.policyEditor.id, user.id, description).subscribe({
+      next: () => {
+        this.versionDescription = '';
+        this.collaborationMessage = 'Versión del diagrama creada correctamente.';
+        this.collaborationError = '';
+        this.cargarVersiones();
+      },
+      error: err => {
+        console.error('Error al crear versión', err);
+        this.collaborationError = 'No se pudo crear la versión.';
+        this.collaborationMessage = '';
+      }
+    });
+  }
+
+  cargarVersionesYComentarios(): void {
+    this.cargarVersiones();
+    this.cargarComentarios();
+  }
+
+  cargarVersiones(): void {
+    if (!this.policyEditor?.id) return;
+
+    this.policyService.getVersions(this.policyEditor.id).subscribe({
+      next: data => this.versions = data,
+      error: err => console.error('Error al cargar versiones', err)
+    });
+  }
+
+  restaurarVersion(version: PolicyVersion): void {
+    if (!this.policyEditor?.id || !version.id || !this.editMode) return;
+
+    if (!confirm(`¿Restaurar la versión ${version.versionNumber}?`)) return;
+
+    this.policyService.restoreVersion(this.policyEditor.id, version.id).subscribe({
+      next: updated => {
+        this.inicializarEditor(updated);
+        this.cargarVersionesYComentarios();
+        this.collaborationMessage = 'Versión restaurada correctamente.';
+        this.collaborationError = '';
+      },
+      error: err => {
+        console.error('Error al restaurar versión', err);
+        this.collaborationError = 'No se pudo restaurar la versión.';
+        this.collaborationMessage = '';
+      }
+    });
+  }
+
+  cargarComentarios(): void {
+    if (!this.policyEditor?.id) return;
+
+    this.policyService.getComments(this.policyEditor.id).subscribe({
+      next: data => this.comments = data,
+      error: err => console.error('Error al cargar comentarios', err)
+    });
+  }
+
+  agregarComentario(): void {
+    if (!this.policyEditor?.id) return;
+
+    const user = this.authService.getUser();
+
+    if (!user) {
+      this.collaborationError = 'No se encontró el usuario autenticado.';
+      return;
+    }
+
+    const message = this.newComment.trim();
+
+    if (!message) return;
+
+    this.policyService.createComment(
+      this.policyEditor.id,
+      user.id,
+      user.nombre,
+      message
+    ).subscribe({
+      next: () => {
+        this.newComment = '';
+        this.cargarComentarios();
+      },
+      error: err => {
+        console.error('Error al crear comentario', err);
+        this.collaborationError = 'No se pudo registrar el comentario.';
+      }
+    });
+  }
+
+  resolverComentario(comment: PolicyComment): void {
+    if (!this.policyEditor?.id || !comment.id) return;
+
+    this.policyService.resolveComment(this.policyEditor.id, comment.id).subscribe({
+      next: () => this.cargarComentarios(),
+      error: err => console.error('Error al resolver comentario', err)
+    });
+  }
+
+  eliminarComentario(comment: PolicyComment): void {
+    if (!this.policyEditor?.id || !comment.id) return;
+
+    if (!confirm('¿Eliminar este comentario?')) return;
+
+    this.policyService.deleteComment(this.policyEditor.id, comment.id).subscribe({
+      next: () => this.cargarComentarios(),
+      error: err => console.error('Error al eliminar comentario', err)
     });
   }
 
@@ -423,6 +625,8 @@ export class BusinessPoliciesComponent implements OnInit {
   }
 
   agregarCarril(): void {
+    if (!this.editMode) return;
+
     const nombre = prompt('Nombre del nuevo carril:');
     if (!nombre || !nombre.trim()) return;
 
@@ -430,8 +634,9 @@ export class BusinessPoliciesComponent implements OnInit {
       this.lanes.push(nombre.trim());
     }
   }
+
   eliminarCarril(lane: string): void {
-    if (!this.policyEditor) return;
+    if (!this.policyEditor || !this.editMode) return;
 
     const nodosEnCarril = this.policyEditor.diagramaJson.nodes.filter(
       n => n.calle === lane
@@ -452,10 +657,19 @@ export class BusinessPoliciesComponent implements OnInit {
     return this.policyEditor.diagramaJson.connections;
   }
 
+  getCommentText(comment: PolicyComment): string {
+    return comment.message || comment.comentario || '';
+  }
+
+  limpiarMensajesColaboracion(): void {
+    this.collaborationMessage = '';
+    this.collaborationError = '';
+  }
+
   private parseLines(value: string): string[] {
-  return value
-    .split('\n')
-    .map(line => line.trim())
-    .filter(line => line.length > 0);
+    return value
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
   }
 }

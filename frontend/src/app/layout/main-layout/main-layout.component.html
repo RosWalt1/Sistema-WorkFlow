@@ -1,7 +1,27 @@
-<div class="flex min-h-screen bg-[#020617] text-white">
-  <app-sidebar></app-sidebar>
+<div class="min-h-screen bg-[#020617] text-white md:flex">
+  <button
+    type="button"
+    (click)="toggleSidebar()"
+    class="fixed top-4 left-4 z-50 md:hidden px-4 py-3 rounded-xl bg-cyan-500 text-slate-950 font-bold shadow-lg shadow-cyan-500/30">
+    ☰
+  </button>
 
-  <main class="flex-1 min-h-screen overflow-auto p-6 bg-[radial-gradient(circle_at_top_left,#0f172a,#020617_55%)]">
+  <div
+    *ngIf="sidebarOpen"
+    (click)="closeSidebar()"
+    class="fixed inset-0 z-30 bg-black/60 md:hidden">
+  </div>
+
+  <app-sidebar
+    class="hidden md:block">
+  </app-sidebar>
+
+  <app-sidebar
+    *ngIf="sidebarOpen"
+    class="fixed inset-y-0 left-0 z-40 block md:hidden">
+  </app-sidebar>
+
+  <main class="min-h-screen flex-1 overflow-auto p-4 pt-20 md:p-6 bg-[radial-gradient(circle_at_top_left,#0f172a,#020617_55%)]">
     <router-outlet></router-outlet>
   </main>
 </div>

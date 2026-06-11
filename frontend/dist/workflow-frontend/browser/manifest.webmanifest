@@ -1,0 +1,19 @@
+{
+  "name": "Workflow System",
+  "short_name": "Workflow",
+  "description": "Sistema Inteligente de Gestión de Workflows",
+  "theme_color": "#0891b2",
+  "background_color": "#020617",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "assets/icons/workflow-icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

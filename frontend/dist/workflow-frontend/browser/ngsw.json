@@ -1,0 +1,61 @@
+{
+  "configVersion": 1,
+  "timestamp": 1781146754425,
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/index.html",
+        "/main.js",
+        "/polyfills.js",
+        "/styles.css"
+      ],
+      "patterns": []
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/assets/icons/workflow-icon.svg"
+      ],
+      "patterns": []
+    }
+  ],
+  "dataGroups": [],
+  "hashTable": {
+    "/assets/icons/workflow-icon.svg": "6395e62f4a39e721baa6ba57ff3273d509b34cd2",
+    "/index.html": "c0499d7b69b8328c6e2585d67dd8e862cdebed7f",
+    "/main.js": "dfb5cfa551c96a1ebc6c0297632efcf7994d7dcb",
+    "/polyfills.js": "f49b49a155bc7d192db62a4c15d0a612b460a667",
+    "/styles.css": "4cf689bf1d143a5af4f760e76c88b889b9fe216b"
+  },
+  "navigationUrls": [
+    {
+      "positive": true,
+      "regex": "^\\/.*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*\\.[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*\\/.*$"
+    }
+  ],
+  "navigationRequestStrategy": "performance"
+}
